@@ -5,8 +5,8 @@ Further plans
 * [ ] Add classes Car, Obstacle
   * [ ] Car should have an ability to move and turn with its own physics
   * [ ] Function that checks intersection of two objects
-   * [ ] Broad phase (Sweep-andprune)
-   * [ ] Narrow phase 
+    * [ ] Broad phase (Sweep-andprune)
+    * [ ] Narrow phase 
   * [ ] Add Finish class
 * [ ] Make a road for a car 
 * [ ] Rays from the center of a car
