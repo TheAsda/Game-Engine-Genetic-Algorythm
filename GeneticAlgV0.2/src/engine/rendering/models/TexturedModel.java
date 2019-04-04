@@ -9,9 +9,11 @@ import org.lwjgl.opengl.GL15;
 public class TexturedModel extends Model {
 
 	private int vertexArrayID, vertexBufferID, normalsBufferID, textureCoordsBufferID, indicesBufferID, vertexCount;
+	private float vertices[];
 	private Material material;
 
 	public TexturedModel(float[] vertices, float[] textureCoords, float normals[], int[] indices, String file) {
+		this.vertices         = vertices;
 		vertexArrayID         = super.createVertexArray();
 		indicesBufferID       = super.bindIndicesBuffer(indices);
 		vertexBufferID        = super.storeData(0, 3, vertices);
@@ -29,6 +31,14 @@ public class TexturedModel extends Model {
 		GL15.glDeleteBuffers(indicesBufferID);
 		GL15.glDeleteBuffers(normalsBufferID);
 		material.remove();
+	}
+
+	public float[] getVertices() {
+		return vertices;
+	}
+	
+	public int getIndicesBufferID() {
+		return indicesBufferID;
 	}
 
 	public int getVertexArrayID() {

@@ -20,6 +20,7 @@ public class Renderer {
 
 	private BasicShader shader;
 	private Window window;
+	@SuppressWarnings ({"unchecked", "rawtypes"})
 	private Map<TexturedModel, List<ModelEntity>> entities = new HashMap();
 
 	public Renderer(BasicShader shader, Window window) {
@@ -60,7 +61,6 @@ public class Renderer {
 				GL13.glActiveTexture(GL13.GL_TEXTURE0);
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, entity.getModel().getMaterial().getTextureID());
 				GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
-
 			}
 			GL20.glDisableVertexAttribArray(0);
 			GL20.glDisableVertexAttribArray(1);
