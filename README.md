@@ -4,9 +4,9 @@ Java game engine using LWJGL and OpenGL. Genetic algorythm that tries to find a 
 Further plans
 * [ ] Add classes Car, Obstacle
   * [x] Car should have an ability to move and turn with its own physics
-  * [ ] Function that checks intersection of two objects
+  * [x] Function that checks intersection of two objects
     * [x] Broad phase
-    * [ ] Narrow phase 
+    * [x] Narrow phase 
   * [ ] Add Finish class
 * [ ] Make a road for a car 
 * [ ] Rays from the center of a car
