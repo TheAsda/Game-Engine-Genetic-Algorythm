@@ -2,8 +2,6 @@ package main;
 
 import org.lwjgl.glfw.GLFW;
 
-import Objects.Car;
-import Objects.Obstacle;
 import engine.io.Loader;
 import engine.io.Window;
 import engine.maths.Vector3f;
@@ -12,6 +10,8 @@ import engine.rendering.Renderer;
 import engine.rendering.models.ModelEntity;
 import engine.rendering.models.TexturedModel;
 import engine.shaders.BasicShader;
+import objects.Car;
+import objects.Obstacle;
 
 public class Main {
 
@@ -79,8 +79,11 @@ public class Main {
 		if (window.isKeyDown(GLFW.GLFW_KEY_RIGHT)) {
 			car.steerRight();
 		}
+		if (window.isKeyDown(GLFW.GLFW_KEY_R)) {
+			car.reset();
+		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_P)) {
-			obstacles.detectCollision(car);
+			System.out.println(obstacles.detectCollision(car));
 		}
 	}
 }

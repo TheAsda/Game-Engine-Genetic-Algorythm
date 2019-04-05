@@ -1,4 +1,4 @@
-package Objects;
+package objects;
 
 import java.util.ArrayList;
 
@@ -59,12 +59,12 @@ public class Obstacle {
 	}
 
 	public boolean detectCollision(Car car) {
+		boolean result = false;
 		ArrayList<Chunk> BFResults = broadPhase(car);
 		if (BFResults.size() != 0) {
-			narrowPhase(BFResults, car);
-			return false;
+			result = result | narrowPhase(BFResults, car);
 		}
-		return false;
+		return result;
 	}
 
 	private ArrayList<Chunk> broadPhase(Car car) {
@@ -86,26 +86,24 @@ public class Obstacle {
 		return list;
 	}
 
-	private void narrowPhase(ArrayList<Chunk> BFResults, Car car) {
+	private boolean narrowPhase(ArrayList<Chunk> BFResults, Car car) {
 		ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
 		for (int i = 0; i < BFResults.size(); i++) {
 			for (int j = 0; j < BFResults.get(i).obstacles.size(); j++) {
 				obstacles.add(BFResults.get(i).obstacles.get(j));
 			}
 		}
-
-		System.out.println("Test");
+		boolean result = false;
 		for (int i = 0; i < obstacles.size(); i++) {
 			ModelEntity model = obstacles.get(i);
-			boolean result = sepAxis(model, car);
-			System.out.println(result);
+			result = result | sepAxis(model, car);
 		}
-		System.out.println("End");
+		return result;
 	}
 
 	private static boolean sepAxis(ModelEntity a, Car b) {
 		Vector3f aPosition = a.getPosition();
-		Vector3f bPosition = b.getPosition();
+		Vector3f bPosition = b.box.getPosition();
 		float xOffset = (float)Math.sqrt(Math.pow(aPosition.getX() - bPosition.getX(), 2));
 		float zOffset = (float)Math.sqrt(Math.pow(aPosition.getZ() - bPosition.getZ(), 2));
 		Vector2f offset = new Vector2f(xOffset, zOffset);
