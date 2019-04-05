@@ -7,7 +7,7 @@ Further plans
   * [x] Function that checks intersection of two objects
     * [x] Broad phase
     * [x] Narrow phase 
-  * [ ] Add Finish class
+  * [x] Add Finish class
 * [ ] Make a road for a car 
 * [ ] Rays from the center of a car
   * [ ] Function that returns distance to an object
