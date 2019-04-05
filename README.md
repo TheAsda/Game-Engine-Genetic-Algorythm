@@ -1,7 +1,7 @@
 # Game-Engine-Genetic-Algorythm
 Java game engine using LWJGL and OpenGL. Genetic algorythm that tries to find a path to finish.
 
-Further plans
+Further plans:
 * [ ] Add classes Car, Obstacle
   * [x] Car should have an ability to move and turn with its own physics
   * [x] Function that checks intersection of two objects
