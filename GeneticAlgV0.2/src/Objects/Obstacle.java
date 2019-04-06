@@ -2,7 +2,9 @@ package objects;
 
 import java.util.ArrayList;
 
-import engine.io.obj.OBJLoader;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
 import engine.maths.Vector2f;
 import engine.maths.Vector3f;
 import engine.rendering.Renderer;
@@ -10,6 +12,7 @@ import engine.rendering.models.ModelEntity;
 
 class Chunk {
 
+	@SuppressWarnings ("unused")
 	private float x1, y1, x2, y2;
 	public ArrayList<ModelEntity> obstacles;
 
@@ -20,6 +23,22 @@ class Chunk {
 		this.y2        = y2;
 		this.obstacles = obstacles;
 	}
+
+	public float getX1() {
+		return x1;
+	}
+
+	public float getY1() {
+		return y1;
+	}
+
+	public float getX2() {
+		return x2;
+	}
+
+	public float getY2() {
+		return y2;
+	}
 }
 
 public class Obstacle {
@@ -27,6 +46,7 @@ public class Obstacle {
 	private Chunk chunks[];
 	private int length, gridSize;
 	private float chunkLength;
+	private final String JSONFILE = "obstacles.json";
 
 	public Obstacle(ModelEntity obstacles[], float chunkLength) {
 		this.length      = obstacles.length;
@@ -44,7 +64,30 @@ public class Obstacle {
 						tempObstacles.add(obstacles[i]);
 					}
 				}
-				chunks[k++] = new Chunk(tempObstacles.size() != 0 ? tempObstacles : null, xStart, yStart, xStart + chunkLength, yStart + chunkLength);
+				chunks[k++] = new Chunk(tempObstacles, xStart, yStart, xStart + chunkLength, yStart + chunkLength);
+			}
+		}
+	}
+
+	public Obstacle(float chunkLength) {
+		this.chunkLength = chunkLength;
+		this.gridSize    = (int)(100f / chunkLength);
+		chunks           = new Chunk[gridSize * gridSize];
+		int k = 0;
+		for (float xStart = -100f / 2; xStart < 100f / 2 - chunkLength; xStart += chunkLength) {
+			for (float yStart = -100f / 2; yStart < 100f / 2 - chunkLength; yStart += chunkLength) {
+				chunks[k++] = new Chunk(new ArrayList<ModelEntity>(), xStart, yStart, xStart + chunkLength, yStart + chunkLength);
+			}
+		}
+	}
+
+	public void add(ModelEntity obstacle) {
+		Vector3f position = obstacle.getPosition();
+		for (int i = 0; i < chunks.length; i++) {
+			if (position.getX() >= chunks[i].getX1() && position.getY() >= chunks[i].getY1() &&
+				position.getX() < chunks[i].getX2() && position.getY() < chunks[i].getY2()) {
+				chunks[i].obstacles.add(obstacle);
+				return;
 			}
 		}
 	}
@@ -172,5 +215,25 @@ public class Obstacle {
 				max0 = dot;
 		}
 		return new float[]{min0, max0};
+	}
+
+	public void saveToJSON() {
+		JSONObject object = new JSONObject();
+
+	}
+
+	public void loadFromJSON() {
+		JSONObject object = new JSONObject();
+
+	}
+
+	protected void saveToJSON(String jSONFILE) {
+		JSONObject object = new JSONObject();
+
+	}
+
+	protected void loadFromJSON(String jSONFILE) {
+		// JSONObject object = new JSONObject();
+
 	}
 }

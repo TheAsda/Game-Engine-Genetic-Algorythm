@@ -209,4 +209,12 @@ public class Window {
 	public void unlockMouse() {
 		GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 	}
+	
+	public Vector3f getMousePosition(float WIDTH,float HEIGHT) {
+		float x = (float)this.getMouseX()-WIDTH/2;//how to get mouse coordinates ???
+		float y = (float)this.getMouseY()-HEIGHT/2;
+		x=x*5.5f/400;
+		y=(y*5.5f/400-5.5f)*-1;
+		return new Vector3f(x,0,y);
+	}
 }

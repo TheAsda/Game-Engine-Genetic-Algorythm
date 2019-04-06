@@ -1,14 +1,13 @@
 package objects;
 
 import engine.maths.Vector3f;
-import engine.rendering.Renderer;
 import engine.rendering.models.ModelEntity;
 import engine.rendering.models.TexturedModel;
-import engine.rendering.models.UntexturedModel;
 
 public class Car extends ModelEntity {
 
 	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f;
+	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;
 	private Vector3f centroid, startPosition, startAngle;
 	public ModelEntity box;
