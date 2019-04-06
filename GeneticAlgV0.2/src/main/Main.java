@@ -4,7 +4,6 @@ import org.lwjgl.glfw.GLFW;
 
 import engine.io.Loader;
 import engine.io.Window;
-import engine.maths.Matrix4f;
 import engine.maths.Vector3f;
 import engine.rendering.Camera;
 import engine.rendering.Renderer;
@@ -116,6 +115,9 @@ public class Main {
 		if (window.isKeyPressed(GLFW.GLFW_KEY_E)) {
 			editorsMode = !editorsMode;
 			window.unlockMouse();
+		}
+		if(window.isKeyPressed(GLFW.GLFW_KEY_Z)) {
+			obstacles.saveToJSON();
 		}
 		if (editorsMode == true) {
 			Vector3f vec = window.getMousePosition(WIDTH, HEIGHT);
