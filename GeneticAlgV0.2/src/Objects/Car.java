@@ -1,20 +1,23 @@
-package Objects;
+package objects;
 
 import engine.maths.Vector3f;
-import engine.rendering.Renderer;
 import engine.rendering.models.ModelEntity;
 import engine.rendering.models.TexturedModel;
-import engine.rendering.models.UntexturedModel;
 
 public class Car extends ModelEntity {
 
 	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f;
+	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;
-	private Vector3f centroid;
+	private Vector3f centroid, startPosition, startAngle;
 	public ModelEntity box;
 	public float boxVertices[];
+
 	public Car(TexturedModel model, Vector3f position, Vector3f angle, Vector3f scale, float power) {
 		super(model, position, angle, scale);
+
+		startPosition = position;
+		startAngle    = angle;
 
 		float vertices[] = super.getModel().getVertices();
 		float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE,
@@ -74,7 +77,6 @@ public class Car extends ModelEntity {
 			}, "brick.png"
 		);
 		this.box      = new ModelEntity(box, position, angle, scale);
-
 		this.power    = power;
 		this.centroid = new Vector3f(position.getX(), position.getY(), position.getZ());
 		this.angle    = angle.getY();
@@ -117,5 +119,16 @@ public class Car extends ModelEntity {
 	public void steerRight() {
 		if (this.angularVelocity > -this.maxAngularVelocity && this.velocity > this.minVelocity)
 			angularVelocity -= turnSpeed;
+	}
+
+	public void reset() {
+		super.setPosition(startPosition);
+		super.setRotation(startAngle);
+		box.setPosition(startPosition);
+		box.setRotation(startAngle);
+		velocity        = 0f;
+		angularVelocity = 0f;
+		angle           = startAngle.getY();
+		centroid        = startPosition;
 	}
 }
