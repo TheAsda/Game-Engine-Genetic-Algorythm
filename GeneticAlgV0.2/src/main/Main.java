@@ -42,6 +42,10 @@ public class Main {
 		car    = Loader.loadModel(CAR_OBJ, CAR_TEXTURE);
 		brick  = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
 		finish = Loader.loadModel(FINISH_OBJ, FINISH_TEXTURE);
+		obstacles.loadFromJSON(brick);
+		finishes.loadFromJSON(finish);
+		obstacles.render(renderer);
+		finishes.render(renderer);
 		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
 		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));

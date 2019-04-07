@@ -286,7 +286,8 @@ public class Obstacle {
 			obj = parser.parse(new FileReader("res/jsons/" + this.JSONFILE));
 		}
 		catch (IOException | ParseException e) {
-			e.printStackTrace();
+			System.out.println("No obstacles file");
+			return;
 		}
 		JSONObject jsonObject = (JSONObject)obj;
 		this.chunkLength = ((Number)jsonObject.get("chunkLength")).floatValue();
@@ -377,7 +378,8 @@ public class Obstacle {
 			obj = parser.parse(new FileReader("res/jsons/" + JSONFILE));
 		}
 		catch (IOException | ParseException e) {
-			e.printStackTrace();
+			System.out.println("No finish file");
+			return;
 		}
 		JSONObject jsonObject = (JSONObject)obj;
 		this.chunkLength = ((Number)jsonObject.get("chunkLength")).floatValue();
