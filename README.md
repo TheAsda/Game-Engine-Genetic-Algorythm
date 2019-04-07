@@ -8,6 +8,7 @@ Further plans:
     * [x] Broad phase
     * [x] Narrow phase 
   * [x] Add Finish class
+    *[ ] Checkpoints and Finish
 * [ ] Make a road for a car 
 * [ ] Rays from the center of a car
   * [ ] Function that returns distance to an object
