@@ -67,4 +67,11 @@ public class Renderer {
 			GL30.glBindVertexArray(0);
 		}
 	}
+
+	public void remove(TexturedModel model) {
+		if (this.entities.get(model).size() == 1)
+			this.entities.remove(model);
+		else
+			this.entities.get(model).remove(this.entities.get(model).size() - 1);
+	}
 }

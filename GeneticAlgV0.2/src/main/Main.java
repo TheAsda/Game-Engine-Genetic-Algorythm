@@ -27,8 +27,11 @@ public class Main {
 	private static boolean editorsMode = false;
 	private static char currentType;
 	private static ModelEntity currentModel = null;
-	private static Obstacle obstacles = new Obstacle(10f);
-	private static Finish finishes = new Finish(10f);
+	private static Obstacle obstacles = new Obstacle(1f);
+	private static Finish finishes = new Finish(1f);
+	private static TexturedModel car;
+	private static TexturedModel brick;
+	private static TexturedModel finish;
 
 	public static void main(String[] args) {
 		window.create();
@@ -36,27 +39,13 @@ public class Main {
 		window.lockMouse();
 		shader.create();
 		renderer.update();
-		TexturedModel car = Loader.loadModel(CAR_OBJ, CAR_TEXTURE);
+		car    = Loader.loadModel(CAR_OBJ, CAR_TEXTURE);
+		brick  = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
+		finish = Loader.loadModel(FINISH_OBJ, FINISH_TEXTURE);
 		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
-		TexturedModel brick = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
-		TexturedModel finish = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
 		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		/*ModelEntity finishEntity = new ModelEntity(finish, new Vector3f(5f, 0f, 10f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity1 = new ModelEntity(brick, new Vector3f(0.8f, 0f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity2 = new ModelEntity(brick, new Vector3f(-0.8f, 0f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity3 = new ModelEntity(brick, new Vector3f(0.8f, 0f, 1.2f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity4 = new ModelEntity(brick, new Vector3f(-0.8f, 0f, 1.2f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity5 = new ModelEntity(brick, new Vector3f(-0.5f, 0f, 2.35f), new Vector3f(0, -30f, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity6 = new ModelEntity(brick, new Vector3f(1.1f, 0f, 2.28f), new Vector3f(0, -30f, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity7 = new ModelEntity(brick, new Vector3f(0f, 0f, 3.5f), new Vector3f(0, -30, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity brickEntity8 = new ModelEntity(brick, new Vector3f(10f, 0f, 7f), new Vector3f(0, -30, 0), new Vector3f(1f, 1f, 1f));
-		Obstacle obstacles = new Obstacle(
-			new ModelEntity[]{brickEntity1, brickEntity2, brickEntity3, brickEntity4, brickEntity5, brickEntity6, brickEntity7, brickEntity8}, 10f
-		);
-		Finish finishes = new Finish(new ModelEntity[]{finishEntity}, 10f);*/
 		renderer.proseeEntity(carEntity);
-		//renderer.proseeEntity(carEntity.box);
 		renderer.proseeEntity(floorEntity);
 		obstacles.render(renderer);
 		finishes.render(renderer);
@@ -116,30 +105,39 @@ public class Main {
 			editorsMode = !editorsMode;
 			window.unlockMouse();
 		}
-		if(window.isKeyPressed(GLFW.GLFW_KEY_Z)) {
+		if (window.isKeyPressed(GLFW.GLFW_KEY_Z)) {
 			obstacles.saveToJSON();
+			finishes.saveToJSON();
+		}
+		if (window.isKeyPressed(GLFW.GLFW_KEY_X)) {
+			obstacles.loadFromJSON(brick);
+			finishes.loadFromJSON(finish);
+			obstacles.render(renderer);
+			finishes.render(renderer);
 		}
 		if (editorsMode == true) {
 			Vector3f vec = window.getMousePosition(WIDTH, HEIGHT);
-			if (window.isKeyPressed(GLFW.GLFW_KEY_B)) {
-				currentType = 'b';
-				TexturedModel brick = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
+			if (window.isKeyPressed(GLFW.GLFW_KEY_B) && (currentModel == null || currentType == 'f')) {
+				if (currentType == 'f')
+					renderer.remove(finish);
+				currentType  = 'b';
 				currentModel = new ModelEntity(brick, vec, new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
 				renderer.proseeEntity(currentModel);
 			}
-			if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
-				currentType = 'f';
-				TexturedModel finish = Loader.loadModel(FINISH_OBJ, FINISH_TEXTURE);
+			if (window.isKeyPressed(GLFW.GLFW_KEY_F) && (currentModel == null || currentType == 'b')) {
+				if (currentType == 'b')
+					renderer.remove(brick);
+				currentType  = 'f';
 				currentModel = new ModelEntity(finish, vec, new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
 				renderer.proseeEntity(currentModel);
 			}
-			if (window.isKeyPressed(GLFW.GLFW_KEY_KP_ADD)) {
+			if (window.isKeyPressed(GLFW.GLFW_KEY_KP_ADD) && currentModel != null) {
 				System.out.println("plus");
-				currentModel.addRotation(0, -5, 0);
+				currentModel.addRotation(0, -7, 0);
 			}
-			if (window.isKeyPressed(GLFW.GLFW_KEY_KP_SUBTRACT)) {
+			if (window.isKeyPressed(GLFW.GLFW_KEY_KP_SUBTRACT) && currentModel != null) {
 				System.out.println("minus");
-				currentModel.addRotation(0, 5, 0);
+				currentModel.addRotation(0, 7, 0);
 			}
 			if (currentModel != null) {
 				currentModel.setPosition(vec);
@@ -149,6 +147,7 @@ public class Main {
 					if (currentType == 'f')
 						finishes.add(currentModel);
 					currentModel = null;
+					currentType  = ' ';
 				}
 			}
 		}

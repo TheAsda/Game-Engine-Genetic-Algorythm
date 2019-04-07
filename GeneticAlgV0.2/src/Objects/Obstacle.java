@@ -1,17 +1,21 @@
 package objects;
 
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import engine.maths.Vector2f;
 import engine.maths.Vector3f;
 import engine.rendering.Renderer;
 import engine.rendering.models.ModelEntity;
+import engine.rendering.models.TexturedModel;
 
 class Chunk {
 
@@ -50,14 +54,15 @@ public class Obstacle {
 	private int gridSize;
 	private float chunkLength;
 	private final String JSONFILE = "obstacles.json";
+	private final float MAP_SIZE = 20f;
 
 	public Obstacle(ModelEntity obstacles[], float chunkLength) {
 		this.chunkLength = chunkLength;
-		this.gridSize    = (int)(100f / chunkLength);
+		this.gridSize    = (int)(MAP_SIZE / chunkLength);
 		chunks           = new Chunk[gridSize * gridSize];
 		int k = 0;
-		for (float xStart = -100f / 2; xStart < 100f / 2 - chunkLength; xStart += chunkLength) {
-			for (float yStart = -100f / 2; yStart < 100f / 2 - chunkLength; yStart += chunkLength) {
+		for (float xStart = -MAP_SIZE / 2; xStart < MAP_SIZE / 2 - chunkLength; xStart += chunkLength) {
+			for (float yStart = -MAP_SIZE / 2; yStart < MAP_SIZE / 2 - chunkLength; yStart += chunkLength) {
 				ArrayList<ModelEntity> tempObstacles = new ArrayList<ModelEntity>();
 				for (int i = 0; i < obstacles.length; i++) {
 					Vector3f position = obstacles[i].getPosition();
@@ -73,11 +78,11 @@ public class Obstacle {
 
 	public Obstacle(float chunkLength) {
 		this.chunkLength = chunkLength;
-		this.gridSize    = (int)(100f / chunkLength);
+		this.gridSize    = (int)(MAP_SIZE / chunkLength);
 		chunks           = new Chunk[gridSize * gridSize];
 		int k = 0;
-		for (float xStart = -100f / 2; xStart < 100f / 2 - chunkLength; xStart += chunkLength) {
-			for (float yStart = -100f / 2; yStart < 100f / 2 - chunkLength; yStart += chunkLength) {
+		for (float xStart = -MAP_SIZE / 2; xStart < MAP_SIZE / 2 - chunkLength; xStart += chunkLength) {
+			for (float yStart = -MAP_SIZE / 2; yStart < MAP_SIZE / 2 - chunkLength; yStart += chunkLength) {
 				chunks[k++] = new Chunk(new ArrayList<ModelEntity>(), xStart, yStart, xStart + chunkLength, yStart + chunkLength);
 			}
 		}
@@ -123,7 +128,7 @@ public class Obstacle {
 			for (int n = -1; n < 2; n++) {
 				int index = (i + m) * gridSize + j + n;
 				chunk = chunks[index];
-				if (chunk.obstacles != null) {
+				if (chunk.obstacles.size() != 0) {
 					list.add(chunk);
 				}
 			}
@@ -222,7 +227,7 @@ public class Obstacle {
 	@SuppressWarnings ("unchecked")
 	public void saveToJSON() {
 		JSONObject data = new JSONObject();
-		data.put("chenkLength", chunkLength);
+		data.put("chunkLength", chunkLength);
 		data.put("gridSize", gridSize);
 		JSONArray chunks = new JSONArray();
 		data.put("chunks", chunks);
@@ -235,6 +240,7 @@ public class Obstacle {
 			chunk.put("y1", this.chunks[i].getY1());
 			chunk.put("x2", this.chunks[i].getX2());
 			chunk.put("y2", this.chunks[i].getY2());
+			chunk.put("index", i);
 			JSONArray obstacles = new JSONArray();
 			chunk.put("obstacles", obstacles);
 			for (int j = 0; j < this.chunks[i].obstacles.size(); j++) {
@@ -263,21 +269,53 @@ public class Obstacle {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		//chunkLength,gridSize
-		//chunk object: x1,y1,x2,y2, obstacles=[
-		//	chunk:position=[x,y,z], angle=[x,y,z]
-		//]
-		//
 	}
 
-	public void loadFromJSON() {
-
+	public void loadFromJSON(TexturedModel model) {
+		JSONParser parser = new JSONParser();
+		Object obj = null;
+		try {
+			obj = parser.parse(new FileReader("res/jsons/" + this.JSONFILE));
+		}
+		catch (IOException | ParseException e) {
+			e.printStackTrace();
+		}
+		JSONObject jsonObject = (JSONObject)obj;
+		this.chunkLength = ((Number)jsonObject.get("chunkLength")).floatValue();
+		this.gridSize    = ((Number)jsonObject.get("gridSize")).intValue();
+		this.chunks      = new Chunk[gridSize * gridSize];
+		JSONArray JSONChunks = (JSONArray)jsonObject.get("chunks");
+		for (int i = 0; i < JSONChunks.size(); i++) {
+			JSONObject JSONChunk = (JSONObject)JSONChunks.get(i);
+			ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
+			if (JSONChunk.get("obstacles") != "[]") {
+				JSONArray JSONObstacles = (JSONArray)JSONChunk.get("obstacles");
+				for (int j = 0; j < JSONObstacles.size(); j++) {
+					JSONObject JSONEntity = (JSONObject)JSONObstacles.get(j);
+					JSONArray position = (JSONArray)JSONEntity.get("position");
+					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
+					Vector3f entityPosition = new Vector3f(
+						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue()
+					);
+					Vector3f entityRotation = new Vector3f(
+						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue()
+					);
+					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
+				}
+			}
+			float x1 = ((Number)JSONChunk.get("x1")).floatValue();
+			float y1 = ((Number)JSONChunk.get("y1")).floatValue();
+			float x2 = ((Number)JSONChunk.get("x2")).floatValue();
+			float y2 = ((Number)JSONChunk.get("y2")).floatValue();
+			int index = ((Number)JSONChunk.get("index")).intValue();
+			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
+		}
 	}
 
 	@SuppressWarnings ("unchecked")
-	protected void saveToJSON(String jSONFILE) {
+	protected void saveToJSON(String JSONFILE) {
 		JSONObject data = new JSONObject();
-		data.put("chenkLength", chunkLength);
+		data.put("chunkLength", chunkLength);
 		data.put("gridSize", gridSize);
 		JSONArray chunks = new JSONArray();
 		data.put("chunks", chunks);
@@ -290,6 +328,7 @@ public class Obstacle {
 			chunk.put("y1", this.chunks[i].getY1());
 			chunk.put("x2", this.chunks[i].getX2());
 			chunk.put("y2", this.chunks[i].getY2());
+			chunk.put("index", i);
 			JSONArray obstacles = new JSONArray();
 			chunk.put("obstacles", obstacles);
 			for (int j = 0; j < this.chunks[i].obstacles.size(); j++) {
@@ -311,18 +350,56 @@ public class Obstacle {
 		}
 		BufferedWriter writer;
 		try {
-			writer = new BufferedWriter(new FileWriter("res/jsons/" + jSONFILE));
+			writer = new BufferedWriter(new FileWriter("res/jsons/" + JSONFILE));
 			writer.write(data.toJSONString());
 			writer.close();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+			return;
 		}
 
 	}
 
-	protected void loadFromJSON(String jSONFILE) {
-		// JSONObject object = new JSONObject();
+	protected void loadFromJSON(String JSONFILE, TexturedModel model) {
+		JSONParser parser = new JSONParser();
+		Object obj = null;
+		try {
+			obj = parser.parse(new FileReader("res/jsons/" + JSONFILE));
+		}
+		catch (IOException | ParseException e) {
+			e.printStackTrace();
+		}
+		JSONObject jsonObject = (JSONObject)obj;
+		this.chunkLength = ((Number)jsonObject.get("chunkLength")).floatValue();
+		this.gridSize    = ((Number)jsonObject.get("gridSize")).intValue();
+		this.chunks      = new Chunk[gridSize * gridSize];
+		JSONArray JSONChunks = (JSONArray)jsonObject.get("chunks");
+		for (int i = 0; i < JSONChunks.size(); i++) {
+			JSONObject JSONChunk = (JSONObject)JSONChunks.get(i);
+			ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
+			if (JSONChunk.get("obstacles") != "[]") {
+				JSONArray JSONObstacles = (JSONArray)JSONChunk.get("obstacles");
+				for (int j = 0; j < JSONObstacles.size(); j++) {
+					JSONObject JSONEntity = (JSONObject)JSONObstacles.get(j);
+					JSONArray position = (JSONArray)JSONEntity.get("position");
+					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
+					Vector3f entityPosition = new Vector3f(
+						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue()
+					);
+					Vector3f entityRotation = new Vector3f(
+						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue()
+					);
+					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
+				}
+			}
+			float x1 = ((Number)JSONChunk.get("x1")).floatValue();
+			float y1 = ((Number)JSONChunk.get("y1")).floatValue();
+			float x2 = ((Number)JSONChunk.get("x2")).floatValue();
+			float y2 = ((Number)JSONChunk.get("y2")).floatValue();
+			int index = ((Number)JSONChunk.get("index")).intValue();
+			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
+		}
 
 	}
 }

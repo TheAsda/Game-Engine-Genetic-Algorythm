@@ -1,10 +1,12 @@
 package objects;
 
 import engine.rendering.models.ModelEntity;
+import engine.rendering.models.TexturedModel;
 
 public class Finish extends Obstacle {
-	private final String JSONFILE="finish.json";
-	
+
+	private final String JSONFILE = "finish.json";
+
 	public Finish(ModelEntity[] obstacles, float chunkLength) {
 		super(obstacles, chunkLength);
 	}
@@ -18,14 +20,14 @@ public class Finish extends Obstacle {
 			System.out.println("GJ!");
 		}
 	}
-	
+
 	@Override
 	public void saveToJSON() {
 		super.saveToJSON(JSONFILE);
 	}
-	
+
 	@Override
-	public void loadFromJSON() {
-		super.loadFromJSON(JSONFILE);
+	public void loadFromJSON(TexturedModel model) {
+		super.loadFromJSON(JSONFILE, model);
 	}
 }
