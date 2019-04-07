@@ -15,6 +15,6 @@ Further plans:
   * [ ] Takes three inputs: distance to objects from three rays
   * [ ] Returns one of 4 outputs: steer left, steer right, accelerate, stop
 * [ ] Ability to lauch a generation
-* [ ] Realise selection algorythm
-* [ ] Add ability to build paths
+* [ ] Realize selection algorythm
+* [x] Add ability to build paths
 * [ ] Ring road
