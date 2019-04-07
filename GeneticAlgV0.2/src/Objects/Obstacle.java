@@ -120,16 +120,18 @@ public class Obstacle {
 	private ArrayList<Chunk> broadPhase(Car car) {
 		Vector3f carPosition = car.getPosition();
 		int i = (int)(carPosition.getX() / this.chunkLength + this.gridSize / 2);
-		int j = (int)(carPosition.getZ() / this.chunkLength);
+		int j = (int)(carPosition.getZ() / this.chunkLength + this.gridSize / 2);
 
 		Chunk chunk;
 		ArrayList<Chunk> list = new ArrayList<Chunk>();
 		for (int m = -1; m < 2; m++) {
 			for (int n = -1; n < 2; n++) {
 				int index = (i + m) * gridSize + j + n;
-				chunk = chunks[index];
-				if (chunk.obstacles.size() != 0) {
-					list.add(chunk);
+				if (index < gridSize * gridSize && index >= 0) {
+					chunk = chunks[index];
+					if (chunk.obstacles.size() != 0) {
+						list.add(chunk);
+					}
 				}
 			}
 		}
@@ -236,26 +238,32 @@ public class Obstacle {
 				break;
 			JSONObject chunk = new JSONObject();
 			chunks.add(chunk);
+
 			chunk.put("x1", this.chunks[i].getX1());
 			chunk.put("y1", this.chunks[i].getY1());
 			chunk.put("x2", this.chunks[i].getX2());
 			chunk.put("y2", this.chunks[i].getY2());
 			chunk.put("index", i);
+
 			JSONArray obstacles = new JSONArray();
 			chunk.put("obstacles", obstacles);
 			for (int j = 0; j < this.chunks[i].obstacles.size(); j++) {
 				JSONObject obstacle = new JSONObject();
 				Vector3f position = this.chunks[i].obstacles.get(j).getPosition();
 				JSONArray JSONPosition = new JSONArray();
+
 				JSONPosition.add(position.getX());
 				JSONPosition.add(position.getY());
 				JSONPosition.add(position.getZ());
+
 				obstacle.put("position", JSONPosition);
 				Vector3f rotation = this.chunks[i].obstacles.get(j).getRotation();
 				JSONArray JSONRotation = new JSONArray();
+
 				JSONRotation.add(rotation.getX());
 				JSONRotation.add(rotation.getY());
 				JSONRotation.add(rotation.getZ());
+
 				obstacle.put("rotation", JSONRotation);
 				obstacles.add(obstacle);
 			}
@@ -307,6 +315,7 @@ public class Obstacle {
 			float y1 = ((Number)JSONChunk.get("y1")).floatValue();
 			float x2 = ((Number)JSONChunk.get("x2")).floatValue();
 			float y2 = ((Number)JSONChunk.get("y2")).floatValue();
+
 			int index = ((Number)JSONChunk.get("index")).intValue();
 			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
 		}

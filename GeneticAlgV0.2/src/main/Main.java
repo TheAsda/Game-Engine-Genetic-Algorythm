@@ -27,8 +27,8 @@ public class Main {
 	private static boolean editorsMode = false;
 	private static char currentType;
 	private static ModelEntity currentModel = null;
-	private static Obstacle obstacles = new Obstacle(1f);
-	private static Finish finishes = new Finish(1f);
+	private static Obstacle obstacles = new Obstacle(3f);
+	private static Finish finishes = new Finish(3f);
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
@@ -63,7 +63,7 @@ public class Main {
 				else {
 					renderer.loadCamera(editorsCamera);
 				}
-				finishes.finishCheck(carEntity);
+				//finishes.finishCheck(carEntity);
 				shader.bind();
 				shader.useMatrices();
 				renderer.render();
