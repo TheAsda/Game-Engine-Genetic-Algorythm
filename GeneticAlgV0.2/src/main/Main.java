@@ -113,7 +113,10 @@ public class Main {
 		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_E)) {
 			editorsMode = !editorsMode;
-			window.unlockMouse();
+			if (editorsMode = true)
+				window.unlockMouse();
+			else
+				window.lockMouse();
 		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_Z)) {
 			obstacles.saveToJSON();

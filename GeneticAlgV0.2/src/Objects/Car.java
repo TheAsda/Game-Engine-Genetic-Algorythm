@@ -78,17 +78,13 @@ public class Car extends ModelEntity {
 			}, "brick.png");
 		this.box        = new ModelEntity(box, position, angle, scale);
 		this.power      = power;
-		this.centroid   = new Vector3f(position.getX(), position.getY(), position.getZ());
+		this.centroid   = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
 		this.forwardRay = centroid.add(new Vector3f(0f, 0f, rayLength));
 		this.leftRay    = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
 		this.rightRay   = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		System.out.println(centroid.toString());
-		System.out.println(forwardRay.toString());
-		System.out.println(leftRay.toString());
-		System.out.println(rightRay.toString());
-		this.angle  = angle.getY();
-		maxVelocity = power * 100;
-		minVelocity = power * 5;
+		this.angle      = angle.getY();
+		maxVelocity     = power * 100;
+		minVelocity     = power * 5;
 	}
 
 	public void update() {
