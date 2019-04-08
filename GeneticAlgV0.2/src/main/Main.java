@@ -39,18 +39,23 @@ public class Main {
 		window.lockMouse();
 		shader.create();
 		renderer.update();
+
 		car    = Loader.loadModel(CAR_OBJ, CAR_TEXTURE);
 		brick  = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
 		finish = Loader.loadModel(FINISH_OBJ, FINISH_TEXTURE);
+		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
+		TexturedModel monkey = Loader.loadModel("monkey.obj", "monkey.png");
+
 		obstacles.loadFromJSON(brick);
 		finishes.loadFromJSON(finish);
-		obstacles.render(renderer);
-		finishes.render(renderer);
-		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
+
 		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
+		ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getForwardRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+
 		renderer.proseeEntity(carEntity);
 		renderer.proseeEntity(floorEntity);
+		renderer.proseeEntity(monkeyEntity);
 		obstacles.render(renderer);
 		finishes.render(renderer);
 
@@ -60,6 +65,7 @@ public class Main {
 				window.update();
 				renderer.update();
 				carEntity.update();
+				monkeyEntity.setPosition(carEntity.getForwardRay());
 				if (editorsMode == false) {
 					camera.update(window);
 					renderer.loadCamera(camera);

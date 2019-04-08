@@ -6,7 +6,7 @@ import engine.rendering.models.TexturedModel;
 
 public class Car extends ModelEntity {
 
-	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 1f,
+	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 3f,
 		rayAngle = (float)Math.PI / 4;
 	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;
@@ -75,8 +75,7 @@ public class Car extends ModelEntity {
 				2, 7, 6,
 				4, 6, 5,
 				4, 6, 7
-			}, "brick.png"
-		);
+			}, "brick.png");
 		this.box        = new ModelEntity(box, position, angle, scale);
 		this.power      = power;
 		this.centroid   = new Vector3f(position.getX(), position.getY(), position.getZ());
@@ -87,9 +86,9 @@ public class Car extends ModelEntity {
 		System.out.println(forwardRay.toString());
 		System.out.println(leftRay.toString());
 		System.out.println(rightRay.toString());
-		this.angle      = angle.getY();
-		maxVelocity     = power * 100;
-		minVelocity     = power * 5;
+		this.angle  = angle.getY();
+		maxVelocity = power * 100;
+		minVelocity = power * 5;
 	}
 
 	public void update() {
@@ -110,30 +109,40 @@ public class Car extends ModelEntity {
 	}
 
 	private void moveRays() {
-		centroid = centroid.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		centroid   = centroid.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
 		forwardRay = forwardRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
-		leftRay = leftRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
-		rightRay = rightRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		leftRay    = leftRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		rightRay   = rightRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
 	}
 
 	private void rotateRays() {
-		Vector3f newFRayPosition=new Vector3f();
-		newFRayPosition.setX((float)(centroid.getX()+(forwardRay.getX()-centroid.getX())*Math.cos(angle)-(forwardRay.getZ()-centroid.getZ())*Math.sin(angle)));
-		newFRayPosition.setZ((float)(centroid.getZ()+(forwardRay.getX()-centroid.getX())*Math.sin(angle)+(forwardRay.getZ()-centroid.getZ())*Math.cos(angle)));
+		Vector3f newFRayPosition = new Vector3f();
+		newFRayPosition.setX((float)(centroid.getX() + (forwardRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (forwardRay.getZ() - centroid
+			.getZ()) * Math.sin(angularVelocity)));
+		newFRayPosition.setZ((float)(centroid.getZ() + (forwardRay.getX() - centroid.getX()) * Math.sin(angularVelocity) + (forwardRay.getZ() - centroid
+			.getZ()) * Math.cos(angularVelocity)));
 		newFRayPosition.setY(forwardRay.getY());
-		forwardRay=newFRayPosition;
-		
-		Vector3f newLRayPosition=new Vector3f();
-		newLRayPosition.setX((float)(centroid.getX()+(leftRay.getX()-centroid.getX())*Math.cos(angle)-(leftRay.getZ()-leftRay.getZ())*Math.sin(angle)));
-		newLRayPosition.setZ((float)(centroid.getZ()+(leftRay.getX()-centroid.getX())*Math.sin(angle)+(leftRay.getZ()-leftRay.getZ())*Math.cos(angle)));
+		forwardRay = newFRayPosition;
+
+		Vector3f newLRayPosition = new Vector3f();
+		newLRayPosition.setX((float)(centroid.getX() + (leftRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (leftRay.getZ() - leftRay
+			.getZ()) * Math.sin(angularVelocity)));
+		newLRayPosition.setZ((float)(centroid.getZ() + (leftRay.getX() - centroid.getX()) * Math.sin(angularVelocity) + (leftRay.getZ() - leftRay
+			.getZ()) * Math.cos(angularVelocity)));
 		newLRayPosition.setY(leftRay.getY());
-		leftRay=newLRayPosition;
-		
-		Vector3f newRRayPosition=new Vector3f();
-		newRRayPosition.setX((float)(centroid.getX()+(rightRay.getX()-centroid.getX())*Math.cos(angle)-(rightRay.getZ()-centroid.getZ())*Math.sin(angle)));
-		newRRayPosition.setZ((float)(centroid.getZ()+(rightRay.getX()-centroid.getX())*Math.sin(angle)+(rightRay.getZ()-centroid.getZ())*Math.cos(angle)));
+		leftRay = newLRayPosition;
+
+		Vector3f newRRayPosition = new Vector3f();
+		newRRayPosition.setX((float)(centroid.getX() + (rightRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (rightRay.getZ() - centroid
+			.getZ()) * Math.sin(angularVelocity)));
+		newRRayPosition.setZ((float)(centroid.getZ() + (rightRay.getX() - centroid.getX()) * Math.sin(angularVelocity) + (rightRay.getZ() - centroid
+			.getZ()) * Math.cos(angularVelocity)));
 		newRRayPosition.setY(rightRay.getY());
-		rightRay=newRRayPosition;
+		rightRay = newRRayPosition;
+	}
+
+	public Vector3f getForwardRay() {
+		return forwardRay;
 	}
 
 	public void accelerate() {

@@ -304,11 +304,9 @@ public class Obstacle {
 					JSONArray position = (JSONArray)JSONEntity.get("position");
 					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
 					Vector3f entityPosition = new Vector3f(
-						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue()
-					);
+						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
 					Vector3f entityRotation = new Vector3f(
-						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue()
-					);
+						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
 					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
 				}
 			}
@@ -396,11 +394,9 @@ public class Obstacle {
 					JSONArray position = (JSONArray)JSONEntity.get("position");
 					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
 					Vector3f entityPosition = new Vector3f(
-						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue()
-					);
+						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
 					Vector3f entityRotation = new Vector3f(
-						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue()
-					);
+						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
 					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
 				}
 			}
