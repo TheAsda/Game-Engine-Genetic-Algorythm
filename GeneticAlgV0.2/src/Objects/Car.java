@@ -6,7 +6,7 @@ import engine.rendering.models.TexturedModel;
 
 public class Car extends ModelEntity {
 
-	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 3f,
+	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 1.2f,
 		rayAngle = (float)Math.PI / 4;
 	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;

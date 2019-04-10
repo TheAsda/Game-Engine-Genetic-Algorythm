@@ -46,9 +46,6 @@ public class Main {
 		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
 		TexturedModel monkey = Loader.loadModel("monkey.obj", "monkey.png");
 
-		obstacles.loadFromJSON(brick);
-		finishes.loadFromJSON(finish);
-
 		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
 		ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getFrontRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
@@ -56,19 +53,27 @@ public class Main {
 		obstacles = new Obstacle(carEntity.getRayLength());
 		finishes  = new Finish(carEntity.getRayLength());
 
+		obstacles.loadFromJSON(brick);
+		finishes.loadFromJSON(finish);
+
 		renderer.proseeEntity(carEntity);
 		renderer.proseeEntity(floorEntity);
 		renderer.proseeEntity(monkeyEntity);
 		obstacles.render(renderer);
 		finishes.render(renderer);
 
+		int i = 0;
+
 		while (!window.closed()) {
 			if (window.isUpdating()) {
 				keyActions(carEntity);
+
 				window.update();
 				renderer.update();
 				carEntity.update();
+
 				monkeyEntity.setPosition(carEntity.getFrontRay());
+
 				if (editorsMode == false) {
 					camera.update(window);
 					renderer.loadCamera(camera);
@@ -76,12 +81,19 @@ public class Main {
 				else {
 					renderer.loadCamera(editorsCamera);
 				}
+
 				//finishes.finishCheck(carEntity);
+
 				shader.bind();
 				shader.useMatrices();
 				renderer.render();
 				shader.unbind();
 				window.swapBuffers();
+				i++;
+			}
+			if (i % 5 == 0) {
+				obstacles.raysCollision(carEntity);
+				i = 1;
 			}
 		}
 		finish.remove();

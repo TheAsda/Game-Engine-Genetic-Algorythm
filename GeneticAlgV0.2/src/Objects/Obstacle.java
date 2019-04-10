@@ -238,7 +238,8 @@ public class Obstacle {
 				}
 			}
 
-			calculateDimentions(obstacles.get(0));
+			if (minX == 0)
+				calculateDimentions(obstacles.get(0));
 
 			float frontDist = car.getRayLength(), leftDist = car.getRayLength(), rightDist = car.getRayLength();
 			Vector2f frontRayCollision, leftRayCollision, rightRayCollision;
@@ -307,6 +308,7 @@ public class Obstacle {
 		return null;
 	}
 
+	@SuppressWarnings ("unused")
 	private static boolean isInsideRect(Vector2f topLeft, Vector2f bottomRight, Vector2f topRight, Vector2f bottomLeft, Vector2f currentVec) {
 		Vector2f arr[] = {topLeft, bottomLeft, bottomRight, topRight};
 		int n = 4;
@@ -334,10 +336,6 @@ public class Obstacle {
 
 	private static float rotate(Vector2f a, Vector2f b, Vector2f c) {
 		return (b.getX() - a.getX()) * (c.getY() - b.getY()) - (b.getY() - a.getY()) * (c.getX() - b.getX());
-	}
-
-	private static float calcDist(Vector2f a, Vector2f b) {
-		return (float)Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
 	}
 
 	@SuppressWarnings ("unchecked")
