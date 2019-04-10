@@ -7,7 +7,6 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="res"/>
-	<classpathentry kind="lib" path="lib/slick-util3.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-natives-windows.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-sources.jar"/>

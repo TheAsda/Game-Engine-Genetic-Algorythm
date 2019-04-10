@@ -10,7 +10,7 @@ public class Car extends ModelEntity {
 		rayAngle = (float)Math.PI / 4;
 	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;
-	private Vector3f centroid, startPosition, startAngle, forwardRay, leftRay, rightRay;
+	private Vector3f centroid, startPosition, startAngle, frontRay, leftRay, rightRay;
 	public ModelEntity box;
 	public float boxVertices[];
 
@@ -76,15 +76,15 @@ public class Car extends ModelEntity {
 				4, 6, 5,
 				4, 6, 7
 			}, "brick.png");
-		this.box        = new ModelEntity(box, position, angle, scale);
-		this.power      = power;
-		this.centroid   = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
-		this.forwardRay = centroid.add(new Vector3f(0f, 0f, rayLength));
-		this.leftRay    = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		this.rightRay   = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		this.angle      = angle.getY();
-		maxVelocity     = power * 100;
-		minVelocity     = power * 5;
+		this.box      = new ModelEntity(box, position, angle, scale);
+		this.power    = power;
+		this.centroid = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
+		this.frontRay = centroid.add(new Vector3f(0f, 0f, rayLength));
+		this.leftRay  = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.rightRay = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.angle    = angle.getY();
+		maxVelocity   = power * 100;
+		minVelocity   = power * 5;
 	}
 
 	public void update() {
@@ -105,20 +105,20 @@ public class Car extends ModelEntity {
 	}
 
 	private void moveRays() {
-		centroid   = centroid.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
-		forwardRay = forwardRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
-		leftRay    = leftRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
-		rightRay   = rightRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		centroid = centroid.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		frontRay = frontRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		leftRay  = leftRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
+		rightRay = rightRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
 	}
 
 	private void rotateRays() {
 		Vector3f newFRayPosition = new Vector3f();
-		newFRayPosition.setX((float)(centroid.getX() + (forwardRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (forwardRay.getZ() - centroid
+		newFRayPosition.setX((float)(centroid.getX() + (frontRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (frontRay.getZ() - centroid
 			.getZ()) * Math.sin(angularVelocity)));
-		newFRayPosition.setZ((float)(centroid.getZ() + (forwardRay.getX() - centroid.getX()) * Math.sin(angularVelocity) + (forwardRay.getZ() - centroid
+		newFRayPosition.setZ((float)(centroid.getZ() + (frontRay.getX() - centroid.getX()) * Math.sin(angularVelocity) + (frontRay.getZ() - centroid
 			.getZ()) * Math.cos(angularVelocity)));
-		newFRayPosition.setY(forwardRay.getY());
-		forwardRay = newFRayPosition;
+		newFRayPosition.setY(frontRay.getY());
+		frontRay = newFRayPosition;
 
 		Vector3f newLRayPosition = new Vector3f();
 		newLRayPosition.setX((float)(centroid.getX() + (leftRay.getX() - centroid.getX()) * Math.cos(angularVelocity) - (leftRay.getZ() - leftRay
@@ -137,8 +137,28 @@ public class Car extends ModelEntity {
 		rightRay = newRRayPosition;
 	}
 
-	public Vector3f getForwardRay() {
-		return forwardRay;
+	public Vector3f getFrontRay() {
+		return frontRay;
+	}
+
+	public Vector3f getLeftRay() {
+		return leftRay;
+	}
+
+	public Vector3f getRightRay() {
+		return rightRay;
+	}
+
+	public float getRayLength() {
+		return rayLength;
+	}
+
+	public Vector3f getCentroid() {
+		return centroid;
+	}
+
+	public float getAngle() {
+		return angle;
 	}
 
 	public void accelerate() {

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.json.simple.JSONArray;
@@ -22,6 +23,7 @@ class Chunk {
 	@SuppressWarnings ("unused")
 	private float x1, y1, x2, y2;
 	public ArrayList<ModelEntity> obstacles;
+	public ArrayList<ArrayList<Vector3f>> coordinates;
 
 	Chunk(ArrayList<ModelEntity> obstacles, float x1, float y1, float x2, float y2) {
 		this.x1        = x1;
@@ -52,7 +54,7 @@ public class Obstacle {
 
 	private Chunk chunks[];
 	private int gridSize;
-	private float chunkLength;
+	private float chunkLength, minX, minY, maxX, maxY;
 	private final String JSONFILE = "obstacles.json";
 	private final float MAP_SIZE = 20f;
 
@@ -224,6 +226,118 @@ public class Obstacle {
 				max0 = dot;
 		}
 		return new float[]{min0, max0};
+	}
+
+	public float[] raysCollision(Car car) {
+		ArrayList<Chunk> BFResults = broadPhase(car);
+		if (BFResults.size() != 0) {
+			ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
+			for (int i = 0; i < BFResults.size(); i++) {
+				for (int j = 0; j < BFResults.get(i).obstacles.size(); j++) {
+					obstacles.add(BFResults.get(i).obstacles.get(j));
+				}
+			}
+
+			calculateDimentions(obstacles.get(0));
+
+			float frontDist = car.getRayLength(), leftDist = car.getRayLength(), rightDist = car.getRayLength();
+			Vector2f frontRayCollision, leftRayCollision, rightRayCollision;
+			float tFront = car.getRayLength(), tLeft = car.getRayLength(), tRight = car.getRayLength();
+
+			for (int i = 0; i < obstacles.size(); i++) {
+				frontRayCollision = rayCheck(obstacles.get(i), car.getCentroid(), car.getFrontRay());
+				leftRayCollision  = rayCheck(obstacles.get(i), car.getCentroid(), car.getLeftRay());
+				rightRayCollision = rayCheck(obstacles.get(i), car.getCentroid(), car.getRightRay());
+				if (frontRayCollision != null)
+					tFront = calcDist(frontRayCollision, car.getCentroid());
+				if (leftRayCollision != null)
+					tLeft = calcDist(leftRayCollision, car.getCentroid());
+				if (rightRayCollision != null)
+					tRight = calcDist(rightRayCollision, car.getCentroid());
+
+				if (tFront < frontDist)
+					frontDist = tFront;
+				if (tLeft < leftDist)
+					leftDist = tLeft;
+				if (tRight < rightDist)
+					rightDist = tRight;
+			}
+			return new float[]{frontDist, leftDist, rightDist};
+		}
+		return null;
+	}
+
+	private float calcDist(Vector2f a, Vector3f b) {
+		return (float)Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY(), b.getZ()));
+	}
+
+	private Vector2f rayCheck(ModelEntity model, Vector3f start, Vector3f end) {
+		float rotation = model.getRotation().getY();
+		Vector3f position = model.getPosition();
+		Vector2f position2D = new Vector2f(position.getX(), position.getZ());
+		Vector2f currentVec = new Vector2f(start.getX(), start.getZ());
+		Vector2f destination = new Vector2f(end.getX(), end.getZ());
+
+		float DistX = end.getX() - start.getX();
+		float DistZ = end.getZ() - start.getZ();
+
+		BigDecimal stepX = new BigDecimal(DistX / 30);
+		BigDecimal stepZ = new BigDecimal(DistZ / 30);
+
+		Vector2f topLeft = new Vector2f(position.getX() + minX, position.getZ() + maxY);
+		Vector2f bottomRight = new Vector2f(position.getX() + maxX, position.getZ() + minY);
+		Vector2f topRight = new Vector2f(position.getX() + maxX, position.getZ() + maxY);
+		Vector2f bottomLeft = new Vector2f(position.getX() + minX, position.getZ() + minY);
+
+		if (rotation != 0) {
+			topLeft     = topLeft.rotate(rotation, position2D);
+			bottomRight = bottomRight.rotate(rotation, position2D);
+			topRight    = topRight.rotate(rotation, position2D);
+			bottomLeft  = bottomLeft.rotate(rotation, position2D);
+		}
+
+		while (Math.abs(currentVec.getX()) < Math.abs(destination.getX()) || Math.abs(currentVec.getY()) < Math.abs(destination.getY())) {
+			currentVec.setX(currentVec.getX() + stepX.floatValue());
+			currentVec.setY(currentVec.getY() + stepZ.floatValue());
+			boolean res = Obstacle.isInsideRect(topLeft, bottomRight, topRight, bottomLeft, currentVec);
+			if (res == true) {
+				return currentVec;
+			}
+		}
+		return null;
+	}
+
+	private static boolean isInsideRect(Vector2f topLeft, Vector2f bottomRight, Vector2f topRight, Vector2f bottomLeft, Vector2f currentVec) {
+		Vector2f arr[] = {topLeft, bottomLeft, bottomRight, topRight};
+		int n = 4;
+		float x, y;
+		if ((x = rotate(arr[0], arr[1], currentVec)) < 0 || (y = rotate(arr[0], arr[n - 1], currentVec)) > 0) {
+			return false;
+		}
+		int p = 1;
+		int r = n - 1;
+		while (r - p > 1) {
+			int q = (p + r) / 2;
+			if (rotate(arr[0], arr[q], currentVec) < 0) {
+				r = q;
+			}
+			else {
+				p = q;
+			}
+		}
+		return !intersect(arr[0], currentVec, arr[p], arr[r]);
+	}
+
+	private static boolean intersect(Vector2f a, Vector2f b, Vector2f c, Vector2f d) {
+		return rotate(a, b, c) * rotate(a, b, d) <= 0 & rotate(c, d, a) * rotate(c, d, b) < 0;
+	}
+
+	private static float rotate(Vector2f a, Vector2f b, Vector2f c) {
+		return (b.getX() - a.getX()) * (c.getY() - b.getY()) - (b.getY() - a.getY()) * (c.getX() - b.getX());
+	}
+
+	private static float calcDist(Vector2f a, Vector2f b) {
+		return (float)Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -407,6 +521,30 @@ public class Obstacle {
 			int index = ((Number)JSONChunk.get("index")).intValue();
 			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
 		}
+	}
 
+	private void calculateDimentions(ModelEntity model) {
+		float[] vertices = model.getModel().getVertices();
+
+		float x, y;
+		minX = Float.MAX_VALUE;
+		minY = Float.MAX_VALUE;
+		maxX = -Float.MAX_VALUE;
+		maxY = -Float.MAX_VALUE;
+
+		for (int i = 0; i < vertices.length / 3; i++) {
+			x = vertices[i * 3];
+			y = vertices[i * 3 + 2];
+
+			if (x < minX)
+				minX = x;
+			else if (x > maxX)
+				maxX = x;
+
+			if (y < minY)
+				minY = y;
+			else if (y > maxY)
+				maxY = y;
+		}
 	}
 }

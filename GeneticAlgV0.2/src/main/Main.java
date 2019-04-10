@@ -19,7 +19,7 @@ public class Main {
 	private static final int WIDTH = 1200, HEIGHT = 1000, FPS = 60;
 	private static final String CAR_OBJ = "Car.obj", CAR_TEXTURE = "Car4.png", FLOOR_OBJ = "floor.obj", FLOOR_TEXTURE = "floor.png",
 		BRICK_OBJ = "brick.obj", BRICK_TEXTURE = "brick.png", FINISH_OBJ = "finish.obj", FINISH_TEXTURE = "finish.png";
-	private static Window window = new Window(WIDTH, HEIGHT, FPS, "LWJGL");
+	private static Window window = new Window(WIDTH, HEIGHT, FPS, "Car Game");
 	private static BasicShader shader = new BasicShader();
 	private static Renderer renderer = new Renderer(shader, window);
 	private static Camera camera = new Camera(new Vector3f(-1f, 0.5f, 0f), new Vector3f(0, 0, 0));
@@ -27,8 +27,8 @@ public class Main {
 	private static boolean editorsMode = false;
 	private static char currentType;
 	private static ModelEntity currentModel = null;
-	private static Obstacle obstacles = new Obstacle(3f);
-	private static Finish finishes = new Finish(3f);
+	private static Obstacle obstacles;
+	private static Finish finishes;
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
@@ -51,7 +51,10 @@ public class Main {
 
 		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getForwardRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+		ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getFrontRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+
+		obstacles = new Obstacle(carEntity.getRayLength());
+		finishes  = new Finish(carEntity.getRayLength());
 
 		renderer.proseeEntity(carEntity);
 		renderer.proseeEntity(floorEntity);
@@ -65,7 +68,7 @@ public class Main {
 				window.update();
 				renderer.update();
 				carEntity.update();
-				monkeyEntity.setPosition(carEntity.getForwardRay());
+				monkeyEntity.setPosition(carEntity.getFrontRay());
 				if (editorsMode == false) {
 					camera.update(window);
 					renderer.loadCamera(camera);
@@ -107,6 +110,16 @@ public class Main {
 		}
 		if (window.isKeyDown(GLFW.GLFW_KEY_R)) {
 			car.reset();
+		}
+		if (window.isKeyPressed(GLFW.GLFW_KEY_C)) {
+			float result[] = obstacles.raysCollision(car);
+			if (result == null)
+				System.out.println("No obstacles around");
+			else {
+				System.out.println("Front ray dist: " + result[0]);
+				System.out.println("Left ray dist: " + result[1]);
+				System.out.println("Right ray dist: " + result[2]);
+			}
 		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_P)) {
 			System.out.println(obstacles.detectCollision(car));
