@@ -1,18 +1,23 @@
 package objects;
 
+import java.math.BigInteger;
+
+import NeuralNetwork.NeuralNetwork;
 import engine.maths.Vector3f;
 import engine.rendering.models.ModelEntity;
 import engine.rendering.models.TexturedModel;
 
 public class Car extends ModelEntity {
 
-	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 1.2f,
+	private final float drag = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f, rayLength = 3f,
 		rayAngle = (float)Math.PI / 4;
 	@SuppressWarnings ("unused")
 	private float power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity, boxXLength, boxYLength, boxZLength;
 	private Vector3f centroid, startPosition, startAngle, frontRay, leftRay, rightRay;
 	public ModelEntity box;
-	public float boxVertices[];
+	public float boxVertices[], boxDimentions[];
+	private NeuralNetwork brain = new NeuralNetwork(3, 6, 4);
+	private int score = 0;
 
 	public Car(TexturedModel model, Vector3f position, Vector3f angle, Vector3f scale, float power) {
 		super(model, position, angle, scale);
@@ -49,11 +54,90 @@ public class Car extends ModelEntity {
 			}
 		}
 
-		boxXLength  = maxX - minX;
-		boxYLength  = maxY - minY;
-		boxZLength  = maxZ - minZ;
+		boxDimentions = new float[]{minX, minZ, maxX, maxZ};
 
-		boxVertices = new float[]{
+		boxXLength    = maxX - minX;
+		boxYLength    = maxY - minY;
+		boxZLength    = maxZ - minZ;
+
+		boxVertices   = new float[]{
+			minX, maxY, maxZ,
+			minX, minY, maxZ,
+			maxX, minY, maxZ,
+			maxX, maxY, maxZ,
+
+			minX, maxY, minZ,
+			minX, minY, minZ,
+			maxX, minY, minZ,
+			maxX, maxY, minZ
+		};
+
+		TexturedModel box = new TexturedModel(
+			boxVertices, new float[]{}, new float[]{}, new int[]{
+				0, 1, 2,
+				0, 3, 2,
+				0, 1, 4,
+				1, 4, 5,
+				3, 2, 7,
+				2, 7, 6,
+				4, 6, 5,
+				4, 6, 7
+			}, "brick.png");
+		this.box      = new ModelEntity(box, position, angle, scale);
+		this.power    = power;
+		this.centroid = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
+		this.frontRay = centroid.add(new Vector3f(0f, 0f, rayLength));
+		this.leftRay  = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.rightRay = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.angle    = angle.getY();
+		maxVelocity   = power * 100;
+		minVelocity   = power * 5;
+	}
+
+	public Car(TexturedModel model, Vector3f position, Vector3f angle, Vector3f scale, float power, NeuralNetwork brain) {
+		super(model, position, angle, scale);
+
+		this.brain    = brain;
+
+		startPosition = position;
+		startAngle    = angle;
+
+		float vertices[] = super.getModel().getVertices();
+		float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE, minX = Float.MAX_VALUE, minY = Float.MAX_VALUE,
+			minZ = Float.MAX_VALUE;
+
+		for (int i = 0; i < vertices.length / 3; ++i) {
+			float x = vertices[i * 3];
+			float y = vertices[i * 3 + 1];
+			float z = vertices[i * 3 + 2];
+			if (x > maxX) {
+				maxX = x;
+			}
+			else if (x < minX) {
+				minX = x;
+			}
+			if (y > maxY) {
+				maxY = y;
+			}
+			else if (y < minY) {
+				minY = y;
+			}
+
+			if (z > maxZ) {
+				maxZ = z;
+			}
+			else if (z < minZ) {
+				minZ = z;
+			}
+		}
+
+		boxDimentions = new float[]{minX, minZ, maxX, maxZ};
+
+		boxXLength    = maxX - minX;
+		boxYLength    = maxY - minY;
+		boxZLength    = maxZ - minZ;
+
+		boxVertices   = new float[]{
 			minX, maxY, maxZ,
 			minX, minY, maxZ,
 			maxX, minY, maxZ,
@@ -104,6 +188,53 @@ public class Car extends ModelEntity {
 		angularVelocity *= angularDrag;
 	}
 
+	public void think(float[] inputs) {
+		for (int i = 0; i < inputs.length; i++)
+			inputs[i] = inputs[i] / rayLength;
+		float outputs[] = brain.feedforward(inputs);
+
+		float max = Math.max(Math.max(outputs[0], outputs[1]), Math.max(outputs[2], outputs[3]));
+
+		for (int i = 0; i < outputs.length; i++) {
+			if (outputs[i] == max) {
+				switch (i) {
+					case 0:
+						accelerate();
+						return;
+					case 1:
+						stop();
+						return;
+					case 2:
+						steerLeft();
+						return;
+					case 3:
+						steerRight();
+						return;
+				}
+			}
+		}
+	}
+
+	public void addScore() {
+		score++;
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
+	}
+
+	public NeuralNetwork getBrain() {
+		return brain;
+	}
+
+	public Vector3f getStartPosition() {
+		return startPosition;
+	}
+
 	private void moveRays() {
 		centroid = centroid.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
 		frontRay = frontRay.add(new Vector3f(-velocity * (float)Math.sin(angle), 0f, velocity * (float)Math.cos(angle)));
@@ -137,8 +268,16 @@ public class Car extends ModelEntity {
 		rightRay = newRRayPosition;
 	}
 
+	public void mutate(float mutationRate) {
+		this.brain.mutate(mutationRate);
+	}
+
 	public Vector3f getFrontRay() {
 		return frontRay;
+	}
+
+	public float[] getBoxDimentions() {
+		return boxDimentions;
 	}
 
 	public Vector3f getLeftRay() {
@@ -191,5 +330,8 @@ public class Car extends ModelEntity {
 		angularVelocity = 0f;
 		angle           = startAngle.getY();
 		centroid        = startPosition;
+		this.frontRay   = centroid.add(new Vector3f(0f, 0f, rayLength));
+		this.leftRay    = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.rightRay   = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
 	}
 }

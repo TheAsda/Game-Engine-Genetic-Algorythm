@@ -56,11 +56,13 @@ public class Renderer {
 			GL20.glEnableVertexAttribArray(1);
 			List<ModelEntity> list = entities.get(model);
 			for (ModelEntity entity : list) {
-				shader.loadTransformationMatrix(entity.getTransformationMatrix());
-				shader.useMatrices();
-				GL13.glActiveTexture(GL13.GL_TEXTURE0);
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, entity.getModel().getMaterial().getTextureID());
-				GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+				if (entity.isRender() == true) {
+					shader.loadTransformationMatrix(entity.getTransformationMatrix());
+					shader.useMatrices();
+					GL13.glActiveTexture(GL13.GL_TEXTURE0);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, entity.getModel().getMaterial().getTextureID());
+					GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+				}
 			}
 			GL20.glDisableVertexAttribArray(0);
 			GL20.glDisableVertexAttribArray(1);

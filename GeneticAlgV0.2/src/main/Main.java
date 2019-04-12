@@ -2,6 +2,7 @@ package main;
 
 import org.lwjgl.glfw.GLFW;
 
+import NeuralNetwork.Population;
 import engine.io.Loader;
 import engine.io.Window;
 import engine.maths.Vector3f;
@@ -22,7 +23,7 @@ public class Main {
 	private static Window window = new Window(WIDTH, HEIGHT, FPS, "Car Game");
 	private static BasicShader shader = new BasicShader();
 	private static Renderer renderer = new Renderer(shader, window);
-	private static Camera camera = new Camera(new Vector3f(-1f, 0.5f, 0f), new Vector3f(0, 0, 0));
+	private static Camera camera = new Camera(new Vector3f(0f, 1f, 0f), new Vector3f(0, 0, 0));
 	private static Camera editorsCamera = new Camera(new Vector3f(0f, 10f, 5.5f), new Vector3f(-90, 0, 0));
 	private static boolean editorsMode = false;
 	private static char currentType;
@@ -32,6 +33,8 @@ public class Main {
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
+	private final static int population = 10;
+	private static boolean renderedModels[] = new boolean[population];
 
 	public static void main(String[] args) {
 		window.create();
@@ -43,36 +46,43 @@ public class Main {
 		car    = Loader.loadModel(CAR_OBJ, CAR_TEXTURE);
 		brick  = Loader.loadModel(BRICK_OBJ, BRICK_TEXTURE);
 		finish = Loader.loadModel(FINISH_OBJ, FINISH_TEXTURE);
+
 		TexturedModel floor = Loader.loadModel(FLOOR_OBJ, FLOOR_TEXTURE);
 		TexturedModel monkey = Loader.loadModel("monkey.obj", "monkey.png");
 
-		Car carEntity = new Car(car, new Vector3f(0, 0, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), 0.001f);
+		Car carEntities[] = new Car[population];
+		Car carEntitiesDone[] = new Car[population];
+		for (int i = 0; i < population; i++) {
+			carEntities[i] = new Car(car, new Vector3f(0f, 0f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), 0.001f);
+			renderer.proseeEntity(carEntities[i]);
+		}
 		ModelEntity floorEntity = new ModelEntity(floor, new Vector3f(0f, -1f, 0f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f));
-		ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getFrontRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+		//ModelEntity monkeyEntity = new ModelEntity(monkey, carEntity.getFrontRay(), new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
 
-		obstacles = new Obstacle(carEntity.getRayLength());
-		finishes  = new Finish(carEntity.getRayLength());
+		obstacles = new Obstacle(carEntities[0].getRayLength());
+		finishes  = new Finish(carEntities[0].getRayLength());
 
-		obstacles.loadFromJSON(brick);
 		finishes.loadFromJSON(finish);
+		obstacles.loadFromJSON(brick);
 
-		renderer.proseeEntity(carEntity);
 		renderer.proseeEntity(floorEntity);
-		renderer.proseeEntity(monkeyEntity);
+		//renderer.proseeEntity(monkeyEntity);
 		obstacles.render(renderer);
 		finishes.render(renderer);
+		//renderer.proseeEntity(carEntity.box);
 
 		int i = 0;
-
+		int counter = 0;
 		while (!window.closed()) {
 			if (window.isUpdating()) {
-				keyActions(carEntity);
+				keyActions();
 
 				window.update();
 				renderer.update();
-				carEntity.update();
-
-				monkeyEntity.setPosition(carEntity.getFrontRay());
+				for (int k = 0; k < population; k++) {
+					if (carEntities[k] != null)
+						carEntities[k].update();
+				}
 
 				if (editorsMode == false) {
 					camera.update(window);
@@ -82,17 +92,70 @@ public class Main {
 					renderer.loadCamera(editorsCamera);
 				}
 
-				//finishes.finishCheck(carEntity);
-
 				shader.bind();
 				shader.useMatrices();
 				renderer.render();
 				shader.unbind();
 				window.swapBuffers();
+
 				i++;
 			}
 			if (i % 5 == 0) {
-				obstacles.raysCollision(carEntity);
+				for (int k = 0; k < population; k++) {
+					int check = 0;
+					for (int j = 0; j < population; j++) {
+						if (carEntities[j] == null) {
+							check++;
+						}
+					}
+
+					if (check == population) {
+						carEntities     = Population.nextGeneration(carEntitiesDone, car, population);
+						carEntitiesDone = new Car[population];
+						for (int j = 0; j < population; j++) {
+							renderer.proseeEntity(carEntities[j]);
+						}
+						break;
+					}
+
+					if (carEntities[k] == null)
+						continue;
+
+					carEntities[k].addScore();
+					counter++;
+
+					float result[] = obstacles.raysCollision(carEntities[k]);
+					if (result == null)
+						System.out.println("No obstacles around");
+					else {
+						//System.out.println("Front ray dist: " + result[0]);
+						//System.out.println("Left ray dist: " + result[1]);
+						//System.out.println("Right ray dist: " + result[2]);
+						carEntities[k].think(result);
+					}
+
+					if (finishes.finishCheck(carEntities[k])) {
+						System.out.println("Final");
+					}
+					if ((carEntities[k].getScore() > 12 * 10 &&
+						carEntities[k].getCentroid().getX() == carEntities[k].getStartPosition().getX() &&
+						carEntities[k].getCentroid().getZ() == carEntities[k].getStartPosition().getZ()) ||
+						counter >= 12 * 20) {
+						carEntities[k].setRender(false);
+						carEntities[k].setScore(0);
+						carEntitiesDone[k] = carEntities[k];
+						carEntities[k]     = null;
+						counter            = 0;
+						continue;
+					}
+
+					if (obstacles.detectCollision(carEntities[k])) {
+						carEntities[k].setRender(false);
+						carEntitiesDone[k] = carEntities[k];
+						carEntities[k]     = null;
+					}
+				}
+
 				i = 1;
 			}
 		}
@@ -104,25 +167,23 @@ public class Main {
 		window.stop();
 	}
 
-	public static void keyActions(Car car) {
+	public static void keyActions() {
 		if (window.isKeyPressed(GLFW.GLFW_KEY_ESCAPE))
 			window.close();
 		if (window.isKeyPressed(GLFW.GLFW_KEY_L))
 			window.lockMouse();
 		if (window.isKeyPressed(GLFW.GLFW_KEY_U))
 			window.unlockMouse();
-		if (window.isKeyDown(GLFW.GLFW_KEY_UP))
+		/*if (window.isKeyDown(GLFW.GLFW_KEY_UP))
 			car.accelerate();
 		if (window.isKeyDown(GLFW.GLFW_KEY_DOWN))
 			car.stop();
 		if (window.isKeyDown(GLFW.GLFW_KEY_LEFT))
 			car.steerLeft();
-		if (window.isKeyDown(GLFW.GLFW_KEY_RIGHT)) {
+		if (window.isKeyDown(GLFW.GLFW_KEY_RIGHT))
 			car.steerRight();
-		}
-		if (window.isKeyDown(GLFW.GLFW_KEY_R)) {
+		if (window.isKeyDown(GLFW.GLFW_KEY_R))
 			car.reset();
-		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_C)) {
 			float result[] = obstacles.raysCollision(car);
 			if (result == null)
@@ -135,10 +196,11 @@ public class Main {
 		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_P)) {
 			System.out.println(obstacles.detectCollision(car));
-		}
+			System.out.println(finishes.finishCheck(car));
+		}*/
 		if (window.isKeyPressed(GLFW.GLFW_KEY_E)) {
 			editorsMode = !editorsMode;
-			if (editorsMode = true)
+			if (editorsMode == true)
 				window.unlockMouse();
 			else
 				window.lockMouse();

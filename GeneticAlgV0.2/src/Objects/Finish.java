@@ -9,16 +9,15 @@ public class Finish extends Obstacle {
 
 	public Finish(ModelEntity[] obstacles, float chunkLength) {
 		super(obstacles, chunkLength);
+		super.calculateDimentions(obstacles[0].getModel());
 	}
 
 	public Finish(float chunkLength) {
 		super(chunkLength);
 	}
 
-	public void finishCheck(Car car) {
-		if (super.detectCollision(car) == true) {
-			System.out.println("GJ!");
-		}
+	public boolean finishCheck(Car car) {
+		return super.detectCollision(car);
 	}
 
 	@Override
@@ -28,6 +27,7 @@ public class Finish extends Obstacle {
 
 	@Override
 	public void loadFromJSON(TexturedModel model) {
+		super.calculateDimentions(model);
 		super.loadFromJSON(JSONFILE, model);
 	}
 }
