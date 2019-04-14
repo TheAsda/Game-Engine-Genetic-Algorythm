@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +17,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import engine.io.Loader;
 import engine.maths.Vector2f;
 import engine.maths.Vector3f;
 import engine.rendering.Renderer;
@@ -25,50 +24,56 @@ import engine.rendering.models.ModelEntity;
 import engine.rendering.models.TexturedModel;
 
 class Chunk {
-
-	@SuppressWarnings ("unused")
-	private float x1, y1, x2, y2;
-	public ArrayList<ModelEntity> obstacles;
+	
+	private float                         x1, y1, x2, y2;
+	public ArrayList<ModelEntity>         obstacles;
 	public ArrayList<ArrayList<Vector3f>> coordinates;
-
+	
 	Chunk(ArrayList<ModelEntity> obstacles, float x1, float y1, float x2, float y2) {
+		
 		this.x1        = x1;
 		this.y1        = y1;
 		this.x2        = x2;
 		this.y2        = y2;
 		this.obstacles = obstacles;
 	}
-
+	
 	public float getX1() {
+		
 		return x1;
 	}
-
+	
 	public float getY1() {
+		
 		return y1;
 	}
-
+	
 	public float getX2() {
+		
 		return x2;
 	}
-
+	
 	public float getY2() {
+		
 		return y2;
 	}
 }
 
 public class Obstacle {
-
-	private Chunk chunks[];
-	private int gridSize;
-	private float chunkLength;
-	private float minX;
-	private float minY;
-	private float maxX;
-	private float maxY;
-	private final String JSONFILE = "obstacles.json";
-	private final float MAP_SIZE = 20f;
-
+	
+	private Chunk                  chunks[];
+	private int                    gridSize;
+	private float                  chunkLength;
+	private float                  minX;
+	private float                  minY;
+	private float                  maxX;
+	private float                  maxY;
+	private final String           JSONFILE = "obstacles.json";
+	private final float            MAP_SIZE = 20f;
+	private static ExecutorService executor = null;
+	
 	public Obstacle(ModelEntity obstacles[], float chunkLength) {
+		
 		this.chunkLength = chunkLength;
 		this.gridSize    = (int)(MAP_SIZE / chunkLength);
 		chunks           = new Chunk[gridSize * gridSize];
@@ -79,7 +84,7 @@ public class Obstacle {
 				for (int i = 0; i < obstacles.length; i++) {
 					Vector3f position = obstacles[i].getPosition();
 					if (position.getX() >= xStart && position.getX() < xStart + chunkLength && position.getZ() >= yStart && position.getZ() < yStart
-						+ chunkLength) {
+								+ chunkLength) {
 						tempObstacles.add(obstacles[i]);
 					}
 				}
@@ -87,8 +92,9 @@ public class Obstacle {
 			}
 		}
 	}
-
+	
 	public Obstacle(float chunkLength) {
+		
 		this.chunkLength = chunkLength;
 		this.gridSize    = (int)(MAP_SIZE / chunkLength);
 		chunks           = new Chunk[gridSize * gridSize];
@@ -99,19 +105,21 @@ public class Obstacle {
 			}
 		}
 	}
-
+	
 	public void add(ModelEntity obstacle) {
+		
 		Vector3f position = obstacle.getPosition();
 		for (int i = 0; i < chunks.length; i++) {
 			if (position.getX() >= chunks[i].getX1() && position.getY() >= chunks[i].getY1() &&
-				position.getX() < chunks[i].getX2() && position.getY() < chunks[i].getY2()) {
+						position.getX() < chunks[i].getX2() && position.getY() < chunks[i].getY2()) {
 				chunks[i].obstacles.add(obstacle);
 				return;
 			}
 		}
 	}
-
+	
 	public void render(Renderer renderer) {
+		
 		for (int i = 0; i < chunks.length; i++) {
 			if (chunks[i] != null && chunks[i].obstacles != null)
 				for (int j = 0; j < chunks[i].obstacles.size(); j++) {
@@ -119,8 +127,9 @@ public class Obstacle {
 				}
 		}
 	}
-
+	
 	public boolean detectCollision(Car car) {
+		
 		boolean result = false;
 		ArrayList<Chunk> BFResults = broadPhase(car);
 		if (BFResults.size() != 0) {
@@ -128,12 +137,13 @@ public class Obstacle {
 		}
 		return result;
 	}
-
+	
 	private ArrayList<Chunk> broadPhase(Car car) {
+		
 		Vector3f carPosition = car.getPosition();
 		int i = (int)(carPosition.getX() / this.chunkLength + this.gridSize / 2);
 		int j = (int)(carPosition.getZ() / this.chunkLength + this.gridSize / 2);
-
+		
 		Chunk chunk;
 		ArrayList<Chunk> list = new ArrayList<Chunk>();
 		for (int m = -2; m < 3; m++) {
@@ -149,8 +159,9 @@ public class Obstacle {
 		}
 		return list;
 	}
-
+	
 	private boolean narrowPhase(ArrayList<Chunk> BFResults, Car car) {
+		
 		ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
 		for (int i = 0; i < BFResults.size(); i++) {
 			for (int j = 0; j < BFResults.get(i).obstacles.size(); j++) {
@@ -164,168 +175,56 @@ public class Obstacle {
 		}
 		return result;
 	}
-
+	
 	private boolean sepAxis(ModelEntity a, Car b) {
+		
 		Vector3f aPosition = a.getPosition();
 		Vector3f bPosition = b.box.getPosition();
-		//float xOffset = (float)Math.sqrt(Math.pow(aPosition.getX() - bPosition.getX(), 2));
-		//float zOffset = (float)Math.sqrt(Math.pow(aPosition.getZ() - bPosition.getZ(), 2));
-		//Vector2f offset = new Vector2f(xOffset, zOffset);
-		//Vector2f xAxis = new Vector2f();
-		/*
-		float vertices[] = a.getModel().getVertices();
+		
 		float rotation = a.getRotation().getY();
 		Vector2f position2D = new Vector2f(aPosition.getX(), aPosition.getZ());
 		
-		Vector2f aVerticesVectors[] = new Vector2f[vertices.length / 3];
-		for (int i = 0; i < vertices.length / 3; i++) {
-			float x = vertices[3 * i];
-			float z = vertices[3 * i + 2];
-			aVerticesVectors[i] = new Vector2f(x, z).rotate(rotation,position2D);
-		}*/
-
-		/*
-		float rotation = a.getRotation().getY();
-		if(rotation!=0) {
-			Vector2f position2D = new Vector2f(aPosition.getX(), aPosition.getZ());
-			for(int i=0;i<aVerticesVectors.length;i++) {
-				aVerticesVectors[i]=aVerticesVectors[i].rotate(rotation, position2D);
-			}
-		}*/
-
-		float rotation = a.getRotation().getY();
-		Vector2f position2D = new Vector2f(aPosition.getX(), aPosition.getZ());
-
 		Vector2f topLeft = new Vector2f(aPosition.getX() + minX, aPosition.getZ() + maxY);
 		Vector2f bottomRight = new Vector2f(aPosition.getX() + maxX, aPosition.getZ() + minY);
 		Vector2f topRight = new Vector2f(aPosition.getX() + maxX, aPosition.getZ() + maxY);
 		Vector2f bottomLeft = new Vector2f(aPosition.getX() + minX, aPosition.getZ() + minY);
-
+		
 		if (rotation != 0) {
 			topLeft     = topLeft.rotate(rotation, position2D);
 			bottomRight = bottomRight.rotate(rotation, position2D);
 			topRight    = topRight.rotate(rotation, position2D);
 			bottomLeft  = bottomLeft.rotate(rotation, position2D);
 		}
-
-		Vector2f aVerticesVectors[] = {topLeft, topRight, bottomLeft, bottomRight};
-
-		/*TexturedModel monkey = Loader.loadModel("monkey.obj", "monkey.png");
-		ModelEntity monkeyEntity1 = new ModelEntity(monkey, new Vector3f(topLeft.getX(), 0.5f, topLeft.getY()), new Vector3f(0, 0, 0), new Vector3f(1,
-			1, 1));
-		ModelEntity monkeyEntity2 = new ModelEntity(monkey, new Vector3f(topRight.getX(), 0.5f, topRight.getY()), new Vector3f(0, 0, 0), new Vector3f(1,
-			1, 1));
-		ModelEntity monkeyEntity3 = new ModelEntity(monkey, new Vector3f(bottomLeft.getX(), 0.5f, bottomLeft.getY()), new Vector3f(0, 0, 0),
-			new Vector3f(1, 1, 1));
-		ModelEntity monkeyEntity4 = new ModelEntity(monkey, new Vector3f(bottomRight.getX(), 0.5f, bottomRight.getY()), new Vector3f(0, 0, 0),
-			new Vector3f(1, 1, 1));
 		
-		renderer.proseeEntity(monkeyEntity1);
-		renderer.proseeEntity(monkeyEntity2);
-		renderer.proseeEntity(monkeyEntity3);
-		renderer.proseeEntity(monkeyEntity4);*/
-		/*
-		vertices = b.boxVertices;
-		float rotationCar = b.getRotation().getY();
-		Vector2f position2DCar = new Vector2f(bPosition.getX(), bPosition.getZ());
-		
-		Vector2f bVerticesVectors[] = new Vector2f[vertices.length / 3];
-		for (int i = 0; i < vertices.length / 3; i++) {
-			float x = vertices[3 * i];
-			float z = vertices[3 * i + 2];
-			bVerticesVectors[i] = new Vector2f(x, z).rotate(rotationCar,position2DCar);
-		}
-		/*
-		float rotationCar = a.getRotation().getY();
-		if(rotationCar!=0) {
-			Vector2f position2D = new Vector2f(bPosition.getX(), bPosition.getZ());
-			for(int i=0;i<bVerticesVectors.length;i++) {
-				bVerticesVectors[i]=bVerticesVectors[i].rotate(rotationCar, position2D);
-			}
-		}*/
-
 		float rotationCar = b.getRotation().getY();
 		Vector2f position2DCar = new Vector2f(bPosition.getX(), bPosition.getZ());
 		float boxDimentions[] = b.getBoxDimentions();
-
+		
 		Vector2f topLeftCar = new Vector2f(bPosition.getX() + boxDimentions[0], bPosition.getZ() + boxDimentions[3]);
 		Vector2f bottomRightCar = new Vector2f(bPosition.getX() + boxDimentions[2], bPosition.getZ() + boxDimentions[1]);
 		Vector2f topRightCar = new Vector2f(bPosition.getX() + boxDimentions[2], bPosition.getZ() + boxDimentions[3]);
 		Vector2f bottomLeftCar = new Vector2f(bPosition.getX() + boxDimentions[0], bPosition.getZ() + boxDimentions[1]);
-
+		
 		if (rotationCar != 0) {
 			topLeftCar     = topLeftCar.rotate(rotationCar, position2DCar);
 			bottomRightCar = bottomRightCar.rotate(rotationCar, position2DCar);
 			topRightCar    = topRightCar.rotate(rotationCar, position2DCar);
 			bottomLeftCar  = bottomLeftCar.rotate(rotationCar, position2DCar);
 		}
-
+		
 		Vector2f bVerticesVectors[] = {topLeftCar, topRightCar, bottomLeftCar, bottomRightCar};
-
+		
 		boolean result = false;
-
+		
 		for (int i = 0; i < bVerticesVectors.length; i++) {
 			result = result | isInsideRect(topLeft, bottomRight, topRight, bottomLeft, bVerticesVectors[i]);
 		}
-
-		return result;
-		/*for (int j = aVerticesVectors.length - 1, i = 0; i < aVerticesVectors.length; j = i, i++) {
-			Vector2f E = aVerticesVectors[j].sub(aVerticesVectors[i]);
-			xAxis = new Vector2f(-E.getY(), E.getX());
-			if (!intervalIntersect(aVerticesVectors, bVerticesVectors, xAxis, offset))
-				return false;
-		}
 		
-		for (int j = bVerticesVectors.length - 1, i = 0; i < bVerticesVectors.length; j = i, i++) {
-			Vector2f E = bVerticesVectors[j].sub(bVerticesVectors[i]);
-			xAxis = new Vector2f(-E.getY(), E.getX());
-			if (!intervalIntersect(aVerticesVectors, bVerticesVectors, xAxis, offset))
-				return false;
-		}
-		return true;*/
+		return result;
 	}
-
-	private static boolean intervalIntersect(Vector2f[] a, Vector2f[] b, Vector2f xAxis, Vector2f offset) {
-		float min0 = 0, max0 = 0, min1 = 0, max1 = 0;
-		float res[] = GetInterval(a, xAxis, min0, max0);
-		min0 = res[0];
-		max0 = res[1];
-		res  = GetInterval(b, xAxis, min1, max1);
-		min1 = res[0];
-		max1 = res[1];
-		float h = offset.dot(xAxis);
-
-		min0 += h;
-		max0 += h;
-
-		float d0 = min0 - max1;
-		float d1 = min1 - max0;
-
-		if (d0 > 0f || d1 > 0f)
-			return false;
-		else
-			return true;
-	}
-
-	private static float[] GetInterval(Vector2f[] a, Vector2f xAxis, float min0, float max0) {
-		min0 = a[0].dot(xAxis);
-		max0 = min0;
-
-		for (int i = 1; i < a.length; i++) {
-			float dot = a[i].dot(xAxis);
-			if (dot < min0)
-				min0 = dot;
-			else if (dot > max0)
-				max0 = dot;
-		}
-		return new float[]{min0, max0};
-	}
-
-	private static CollisionThread thread1 = new CollisionThread();
-	private static CollisionThread thread2 = new CollisionThread();
-	private static CollisionThread thread3 = new CollisionThread();
-
-	public float[] raysCollision(Car car) {
+	
+	public float[] raysCollision(Car car, ArrayList<CollisionThread> threads) {
+		
 		ArrayList<Chunk> BFResults = broadPhase(car);
 		if (BFResults.size() != 0) {
 			ArrayList<ModelEntity> obstacles = new ArrayList<ModelEntity>();
@@ -334,40 +233,46 @@ public class Obstacle {
 					obstacles.add(BFResults.get(i).obstacles.get(j));
 				}
 			}
-
+			
 			if (minX == 0)
 				calculateDimentions(obstacles.get(0));
-
+			
 			float frontDist = car.getRayLength(), leftDist = car.getRayLength(), rightDist = car.getRayLength();
 			Vector2f frontRayCollision = null, leftRayCollision = null, rightRayCollision = null;
 			float tFront = car.getRayLength(), tLeft = car.getRayLength(), tRight = car.getRayLength();
-
-			ExecutorService executor = Executors.newFixedThreadPool(3);
-			ArrayList<Future<Vector2f>> futures = new ArrayList<Future<Vector2f>>();
-
+			
+			List<Future<Vector2f>> futures = new ArrayList<Future<Vector2f>>();
+			
 			for (int i = 0; i < obstacles.size(); i++) {
-				if (thread1.isNew()) {
-					thread1.setData(obstacles.get(i), car.getCentroid(), car.getFrontRay(), this);
-					thread2.setData(obstacles.get(i), car.getCentroid(), car.getLeftRay(), this);
-					thread3.setData(obstacles.get(i), car.getCentroid(), car.getRightRay(), this);
+				if (threads.get(0).isNew()) {
+					threads.get(0).setData(obstacles.get(i), car.getCentroid(), car.getFrontRay(), this);
+					threads.get(1).setData(obstacles.get(i), car.getCentroid(), car.getLeftRay(), this);
+					threads.get(2).setData(obstacles.get(i), car.getCentroid(), car.getRightRay(), this);
+					
+					for (int j = 0; j < 3; j++)
+						threads.get(j).setNew(false);
 				}
 				else {
-					thread1.setData(obstacles.get(i));
-					thread2.setData(obstacles.get(i));
-					thread3.setData(obstacles.get(i));
+					for (int j = 0; j < 3; j++)
+						threads.get(j).setData(obstacles.get(i));
 				}
-				/*frontRayCollision = rayCheck(obstacles.get(i), car.getCentroid(), car.getFrontRay());
-				leftRayCollision  = rayCheck(obstacles.get(i), car.getCentroid(), car.getLeftRay());
-				rightRayCollision = rayCheck(obstacles.get(i), car.getCentroid(), car.getRightRay());*/
-
-				Future<Vector2f> future1 = executor.submit(thread1);
-				Future<Vector2f> future2 = executor.submit(thread2);
-				Future<Vector2f> future3 = executor.submit(thread3);
-
-				futures.add(future1);
-				futures.add(future2);
-				futures.add(future3);
-
+				
+				if (executor == null) {
+					executor = Executors.newFixedThreadPool(3);
+					for (int j = 0; j < 3; j++) {
+						Future<Vector2f> future = executor.submit(threads.get(j));
+						futures.add(future);
+					}
+				}
+				else {
+					try {
+						futures = executor.invokeAll(threads);
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
 				try {
 					frontRayCollision = futures.get(0).get();
 					leftRayCollision  = futures.get(1).get();
@@ -376,62 +281,63 @@ public class Obstacle {
 				catch (InterruptedException | ExecutionException e) {
 					e.printStackTrace();
 				}
-
+				
 				if (frontRayCollision != null)
 					tFront = calcDist(frontRayCollision, car.getCentroid());
 				if (leftRayCollision != null)
 					tLeft = calcDist(leftRayCollision, car.getCentroid());
 				if (rightRayCollision != null)
 					tRight = calcDist(rightRayCollision, car.getCentroid());
-
+				
 				if (tFront < frontDist)
 					frontDist = tFront;
 				if (tLeft < leftDist)
 					leftDist = tLeft;
 				if (tRight < rightDist)
 					rightDist = tRight;
-
+				
 				futures.clear();
 			}
-			thread1.setNew(true);
-			thread2.setNew(true);
-			thread3.setNew(true);
-
+			for (int j = 0; j < 3; j++)
+				threads.get(j).setNew(true);
+			
 			return new float[]{frontDist, leftDist, rightDist};
 		}
 		return null;
 	}
-
+	
 	private float calcDist(Vector2f a, Vector3f b) {
+		
 		return (float)Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY(), b.getZ()));
 	}
-
+	
 	@SuppressWarnings ("unused")
 	private Vector2f rayCheck(ModelEntity model, Vector3f start, Vector3f end) {
+		
 		float rotation = model.getRotation().getY();
 		Vector3f position = model.getPosition();
 		Vector2f position2D = new Vector2f(position.getX(), position.getZ());
 		Vector2f currentVec = new Vector2f(start.getX(), start.getZ());
 		Vector2f destination = new Vector2f(end.getX(), end.getZ());
-
+		
 		float DistX = end.getX() - start.getX();
 		float DistZ = end.getZ() - start.getZ();
-
+		
 		BigDecimal stepX = new BigDecimal(DistX / 30);
 		BigDecimal stepZ = new BigDecimal(DistZ / 30);
-
+		
 		Vector2f topLeft = new Vector2f(position.getX() + minX, position.getZ() + maxY);
 		Vector2f bottomRight = new Vector2f(position.getX() + maxX, position.getZ() + minY);
 		Vector2f topRight = new Vector2f(position.getX() + maxX, position.getZ() + maxY);
 		Vector2f bottomLeft = new Vector2f(position.getX() + minX, position.getZ() + minY);
-
+		
 		if (rotation != 0) {
 			topLeft     = topLeft.rotate(rotation, position2D);
 			bottomRight = bottomRight.rotate(rotation, position2D);
 			topRight    = topRight.rotate(rotation, position2D);
 			bottomLeft  = bottomLeft.rotate(rotation, position2D);
 		}
-
+		
 		while (Math.abs(currentVec.getX()) < Math.abs(destination.getX()) || Math.abs(currentVec.getY()) < Math.abs(destination.getY())) {
 			currentVec.setX(currentVec.getX() + stepX.floatValue());
 			currentVec.setY(currentVec.getY() + stepZ.floatValue());
@@ -442,9 +348,10 @@ public class Obstacle {
 		}
 		return null;
 	}
-
+	
 	@SuppressWarnings ("unused")
 	private static boolean isInsideRect(Vector2f topLeft, Vector2f bottomRight, Vector2f topRight, Vector2f bottomLeft, Vector2f currentVec) {
+		
 		Vector2f arr[] = {topLeft, bottomLeft, bottomRight, topRight};
 		int n = 4;
 		float x, y;
@@ -464,17 +371,20 @@ public class Obstacle {
 		}
 		return !intersect(arr[0], currentVec, arr[p], arr[r]);
 	}
-
+	
 	private static boolean intersect(Vector2f a, Vector2f b, Vector2f c, Vector2f d) {
+		
 		return rotate(a, b, c) * rotate(a, b, d) <= 0 & rotate(c, d, a) * rotate(c, d, b) < 0;
 	}
-
+	
 	private static float rotate(Vector2f a, Vector2f b, Vector2f c) {
+		
 		return (b.getX() - a.getX()) * (c.getY() - b.getY()) - (b.getY() - a.getY()) * (c.getX() - b.getX());
 	}
-
+	
 	@SuppressWarnings ("unchecked")
 	public void saveToJSON() {
+		
 		JSONObject data = new JSONObject();
 		data.put("chunkLength", chunkLength);
 		data.put("gridSize", gridSize);
@@ -485,32 +395,32 @@ public class Obstacle {
 				break;
 			JSONObject chunk = new JSONObject();
 			chunks.add(chunk);
-
+			
 			chunk.put("x1", this.chunks[i].getX1());
 			chunk.put("y1", this.chunks[i].getY1());
 			chunk.put("x2", this.chunks[i].getX2());
 			chunk.put("y2", this.chunks[i].getY2());
 			chunk.put("index", i);
-
+			
 			JSONArray obstacles = new JSONArray();
 			chunk.put("obstacles", obstacles);
 			for (int j = 0; j < this.chunks[i].obstacles.size(); j++) {
 				JSONObject obstacle = new JSONObject();
 				Vector3f position = this.chunks[i].obstacles.get(j).getPosition();
 				JSONArray JSONPosition = new JSONArray();
-
+				
 				JSONPosition.add(position.getX());
 				JSONPosition.add(position.getY());
 				JSONPosition.add(position.getZ());
-
+				
 				obstacle.put("position", JSONPosition);
 				Vector3f rotation = this.chunks[i].obstacles.get(j).getRotation();
 				JSONArray JSONRotation = new JSONArray();
-
+				
 				JSONRotation.add(rotation.getX());
 				JSONRotation.add(rotation.getY());
 				JSONRotation.add(rotation.getZ());
-
+				
 				obstacle.put("rotation", JSONRotation);
 				obstacles.add(obstacle);
 			}
@@ -525,8 +435,9 @@ public class Obstacle {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void loadFromJSON(TexturedModel model) {
+		
 		JSONParser parser = new JSONParser();
 		Object obj = null;
 		try {
@@ -551,9 +462,9 @@ public class Obstacle {
 					JSONArray position = (JSONArray)JSONEntity.get("position");
 					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
 					Vector3f entityPosition = new Vector3f(
-						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
+								((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
 					Vector3f entityRotation = new Vector3f(
-						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
+								((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
 					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
 				}
 			}
@@ -561,15 +472,16 @@ public class Obstacle {
 			float y1 = ((Number)JSONChunk.get("y1")).floatValue();
 			float x2 = ((Number)JSONChunk.get("x2")).floatValue();
 			float y2 = ((Number)JSONChunk.get("y2")).floatValue();
-
+			
 			int index = ((Number)JSONChunk.get("index")).intValue();
 			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
 		}
 		calculateDimentions(model);
 	}
-
+	
 	@SuppressWarnings ("unchecked")
 	protected void saveToJSON(String JSONFILE) {
+		
 		JSONObject data = new JSONObject();
 		data.put("chunkLength", chunkLength);
 		data.put("gridSize", gridSize);
@@ -580,32 +492,32 @@ public class Obstacle {
 				break;
 			JSONObject chunk = new JSONObject();
 			chunks.add(chunk);
-
+			
 			chunk.put("x1", this.chunks[i].getX1());
 			chunk.put("y1", this.chunks[i].getY1());
 			chunk.put("x2", this.chunks[i].getX2());
 			chunk.put("y2", this.chunks[i].getY2());
 			chunk.put("index", i);
-
+			
 			JSONArray obstacles = new JSONArray();
 			chunk.put("obstacles", obstacles);
 			for (int j = 0; j < this.chunks[i].obstacles.size(); j++) {
 				JSONObject obstacle = new JSONObject();
 				Vector3f position = this.chunks[i].obstacles.get(j).getPosition();
 				JSONArray JSONPosition = new JSONArray();
-
+				
 				JSONPosition.add(position.getX());
 				JSONPosition.add(position.getY());
 				JSONPosition.add(position.getZ());
-
+				
 				obstacle.put("position", JSONPosition);
 				Vector3f rotation = this.chunks[i].obstacles.get(j).getRotation();
 				JSONArray JSONRotation = new JSONArray();
-
+				
 				JSONRotation.add(rotation.getX());
 				JSONRotation.add(rotation.getY());
 				JSONRotation.add(rotation.getZ());
-
+				
 				obstacle.put("rotation", JSONRotation);
 				obstacles.add(obstacle);
 			}
@@ -620,8 +532,9 @@ public class Obstacle {
 			e.printStackTrace();
 		}
 	}
-
+	
 	protected void loadFromJSON(String JSONFILE, TexturedModel model) {
+		
 		JSONParser parser = new JSONParser();
 		Object obj = null;
 		try {
@@ -646,9 +559,9 @@ public class Obstacle {
 					JSONArray position = (JSONArray)JSONEntity.get("position");
 					JSONArray rotation = (JSONArray)JSONEntity.get("rotation");
 					Vector3f entityPosition = new Vector3f(
-						((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
+								((Number)position.get(0)).floatValue(), ((Number)position.get(1)).floatValue(), ((Number)position.get(2)).floatValue());
 					Vector3f entityRotation = new Vector3f(
-						((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
+								((Number)rotation.get(0)).floatValue(), ((Number)rotation.get(1)).floatValue(), ((Number)rotation.get(2)).floatValue());
 					obstacles.add(new ModelEntity(model, entityPosition, entityRotation, new Vector3f(1f, 1f, 1f)));
 				}
 			}
@@ -656,77 +569,83 @@ public class Obstacle {
 			float y1 = ((Number)JSONChunk.get("y1")).floatValue();
 			float x2 = ((Number)JSONChunk.get("x2")).floatValue();
 			float y2 = ((Number)JSONChunk.get("y2")).floatValue();
-
+			
 			int index = ((Number)JSONChunk.get("index")).intValue();
 			this.chunks[index] = new Chunk(obstacles, x1, y1, x2, y2);
 		}
 		calculateDimentions(model);
 	}
-
+	
 	private void calculateDimentions(ModelEntity model) {
+		
 		float[] vertices = model.getModel().getVertices();
-
+		
 		float x, y;
 		minX = Float.MAX_VALUE;
 		minY = Float.MAX_VALUE;
 		maxX = -Float.MAX_VALUE;
 		maxY = -Float.MAX_VALUE;
-
+		
 		for (int i = 0; i < vertices.length / 3; i++) {
 			x = vertices[i * 3];
 			y = vertices[i * 3 + 2];
-
+			
 			if (x < minX)
 				minX = x;
 			else if (x > maxX)
 				maxX = x;
-
+			
 			if (y < minY)
 				minY = y;
 			else if (y > maxY)
 				maxY = y;
 		}
 	}
-
+	
 	protected void calculateDimentions(TexturedModel model) {
+		
 		float[] vertices = model.getVertices();
-
+		
 		float x, y;
 		minX = Float.MAX_VALUE;
 		minY = Float.MAX_VALUE;
 		maxX = -Float.MAX_VALUE;
 		maxY = -Float.MAX_VALUE;
-
+		
 		for (int i = 0; i < vertices.length / 3; i++) {
 			x = vertices[i * 3];
 			y = vertices[i * 3 + 2];
-
+			
 			if (x > maxX)
 				maxX = x;
 			else if (x < minX)
 				minX = x;
-
+			
 			if (y > maxY)
 				maxY = y;
 			else if (y < minY)
 				minY = y;
 		}
 	}
-
+	
 	public float getMinX() {
+		
 		return minX;
 	}
-
+	
 	public float getMinY() {
+		
 		return minY;
 	}
-
+	
 	public float getMaxX() {
+		
 		return maxX;
 	}
-
+	
 	public float getMaxY() {
+		
 		return maxY;
 	}
-
+	
 }
