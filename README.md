@@ -10,12 +10,12 @@ Further plans:
   * [x] Add Finish class
     * [ ] Checkpoints and Finish
 * [x] Make a road for a car 
-* [ ] Rays from the center of a car
-  * [ ] Function that returns distance to an object
-* [ ] Add a neural network to the Car class
-  * [ ] Takes three inputs: distance to objects from three rays
-  * [ ] Returns one of 4 outputs: steer left, steer right, accelerate, stop
-* [ ] Ability to lauch a generation
-* [ ] Realize selection algorythm
+* [x] Rays from the center of a car
+  * [x] Function that returns distance to an object
+* [x] Add a neural network to the Car class
+  * [x] Takes three inputs: distance to objects from three rays
+  * [x] Returns one of 2 outputs: steer left/right, accelerate/stop
+* [x] Ability to lauch a generation
+* [x] Realize selection algorythm
 * [x] Add ability to build paths
 * [ ] Ring road
