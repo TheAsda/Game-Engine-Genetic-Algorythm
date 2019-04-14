@@ -2,8 +2,6 @@ package NeuralNetwork;
 
 import java.util.Random;
 
-import engine.maths.Vector3f;
-import engine.rendering.models.TexturedModel;
 import objects.Car;
 
 public class Population {

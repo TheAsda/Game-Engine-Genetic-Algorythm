@@ -142,12 +142,12 @@ public class Obstacle {
 		
 		Vector3f carPosition = car.getPosition();
 		int i = (int)(carPosition.getX() / this.chunkLength + this.gridSize / 2);
-		int j = (int)(carPosition.getZ() / this.chunkLength + this.gridSize / 2);
+		int j = (int)(carPosition.getZ() / this.chunkLength/* + this.gridSize / 2*/);
 		
 		Chunk chunk;
 		ArrayList<Chunk> list = new ArrayList<Chunk>();
-		for (int m = -2; m < 3; m++) {
-			for (int n = -2; n < 3; n++) {
+		for (int m = -1; m < 2; m++) {
+			for (int n = -1; n < 2; n++) {
 				int index = (i + m) * gridSize + j + n;
 				if (index < gridSize * gridSize && index >= 0) {
 					chunk = chunks[index];
@@ -168,12 +168,12 @@ public class Obstacle {
 				obstacles.add(BFResults.get(i).obstacles.get(j));
 			}
 		}
-		boolean result = false;
 		for (int i = 0; i < obstacles.size(); i++) {
 			ModelEntity model = obstacles.get(i);
-			result = result | sepAxis(model, car);
+			if (sepAxis(model, car) == true)
+				return true;
 		}
-		return result;
+		return false;
 	}
 	
 	private boolean sepAxis(ModelEntity a, Car b) {
@@ -196,6 +196,8 @@ public class Obstacle {
 			bottomLeft  = bottomLeft.rotate(rotation, position2D);
 		}
 		
+		Vector2f aCorners[] = {topLeft, bottomRight, topRight, bottomLeft};
+		
 		float rotationCar = b.getRotation().getY();
 		Vector2f position2DCar = new Vector2f(bPosition.getX(), bPosition.getZ());
 		float boxDimentions[] = b.getBoxDimentions();
@@ -212,13 +214,43 @@ public class Obstacle {
 			bottomLeftCar  = bottomLeftCar.rotate(rotationCar, position2DCar);
 		}
 		
-		Vector2f bVerticesVectors[] = {topLeftCar, topRightCar, bottomLeftCar, bottomRightCar};
+		Vector2f bCorners[] = {topLeftCar, topRightCar, bottomLeftCar, bottomRightCar};
 		
-		boolean result = false;
+		//SAT
+		List<Vector2f> axes = new ArrayList<>();
 		
-		for (int i = 0; i < bVerticesVectors.length; i++) {
-			result = result | isInsideRect(topLeft, bottomRight, topRight, bottomLeft, bVerticesVectors[i]);
+		axes.addAll(getAxis(rotation));
+		axes.addAll(getAxis(rotationCar));
+		
+		for (Vector2f axisN : axes) {
+			
+			Vector2f axis = normalize(axisN);
+			
+			float aMin = (float)Math.min(Math.min(aCorners[0].dot(axis), aCorners[1].dot(axis)), Math.min(aCorners[2].dot(axis), aCorners[3].dot(axis)));
+			float aMax = (float)Math.max(Math.max(aCorners[0].dot(axis), aCorners[1].dot(axis)), Math.max(aCorners[2].dot(axis), aCorners[3].dot(axis)));
+			
+			float bMin = (float)Math.min(Math.min(bCorners[0].dot(axis), bCorners[1].dot(axis)), Math.min(bCorners[2].dot(axis), bCorners[3].dot(axis)));
+			float bMax = (float)Math.max(Math.max(bCorners[0].dot(axis), bCorners[1].dot(axis)), Math.max(bCorners[2].dot(axis), bCorners[3].dot(axis)));
+			
+			if (aMax < bMin || bMax < aMin)
+				return false;
+			
 		}
+		return true;
+	}
+	
+	private static Vector2f normalize(Vector2f vec) {
+		
+		float length = 1f / (float)Math.sqrt(vec.getX() * vec.getX() + vec.getY() * vec.getY());
+		return vec.mul(length);
+	}
+	
+	private static List<Vector2f> getAxis(float angle) {
+		
+		List<Vector2f> result = new ArrayList<Vector2f>();
+		
+		result.add(new Vector2f((float)Math.cos(Math.toRadians(angle)), (float)Math.sin(Math.toRadians(angle))));
+		result.add(new Vector2f((float)Math.cos(Math.toRadians(angle + 90)), (float)Math.sin(Math.toRadians(angle + 90))));
 		
 		return result;
 	}

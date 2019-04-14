@@ -40,22 +40,23 @@ public class SecondThread implements Runnable {
 		int counter = 0;
 		
 		while (!window.closed()) {
-			if (window.isUpdating() && mutate.isMutating() == false) {
+			if (window.isUpdating(1) && mutate.isMutating() == false) {
 				for (int k = 0; k < population; k++) {
 					if (carEntities[k].isRender() == true) {
 						carEntities[k].update();
 						
-						if (counter % 2 == 0) {
-							float result[] = obstacles.raysCollision(carEntities[k], collisionThreads);
-							if (result == null)
-								System.out.println("No obstacles around");
-							else {
-								//System.out.println("Front ray dist: " + result[0]);
-								//System.out.println("Left ray dist: " + result[1]);
-								//System.out.println("Right ray dist: " + result[2]);
-								carEntities[k].think(result);
-							}
+						//if (counter % 2 == 0) {
+						float result[] = obstacles.raysCollision(carEntities[k], collisionThreads);
+						
+						if (result == null)
+							System.out.println("No obstacles around");
+						else {
+							//System.out.println("Front ray dist: " + result[0]);
+							//System.out.println("Left ray dist: " + result[1]);
+							//System.out.println("Right ray dist: " + result[2]);
+							carEntities[k].think(result);
 						}
+						//}
 						if (counter % 3 == 0) {
 							if ((double)System.nanoTime() / (double)1000000000 - time > 12) {
 								carEntities[k].setRender(false);

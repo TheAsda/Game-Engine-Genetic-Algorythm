@@ -8,7 +8,7 @@ import engine.rendering.models.TexturedModel;
 public class Car extends ModelEntity {
 	
 	private final float   drag  = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f,
-				rayLength = 3f,
+				rayLength = 2f,
 				rayAngle = (float)Math.PI / 4;
 	private float         power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity;
 	private Vector3f      centroid, startPosition, startAngle, frontRay, leftRay, rightRay;
@@ -35,12 +35,14 @@ public class Car extends ModelEntity {
 			float x = vertices[i * 3];
 			float y = vertices[i * 3 + 1];
 			float z = vertices[i * 3 + 2];
+			
 			if (x > maxX) {
 				maxX = x;
 			}
 			else if (x < minX) {
 				minX = x;
 			}
+			
 			if (y > maxY) {
 				maxY = y;
 			}

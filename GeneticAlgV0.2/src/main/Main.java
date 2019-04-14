@@ -1,5 +1,7 @@
 package main;
 
+import javax.print.attribute.SetOfIntegerSyntax;
+
 import org.lwjgl.glfw.GLFW;
 
 import NeuralNetwork.Population;
@@ -48,7 +50,7 @@ public class Main {
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
-	private final static int     population    = 10;
+	private final static int     population    = 5;
 	
 	public static void main(String[] args) {
 		
@@ -86,7 +88,7 @@ public class Main {
 		SecondThread thread = new SecondThread(window, carEntities, population, obstacles, mutate);
 		
 		while (!window.closed()) {
-			if (window.isUpdating() && mutate.isMutating() == false) {
+			if (window.isUpdating(0) && mutate.isMutating() == false) {
 				keyActions();
 				
 				int check = 0;
@@ -118,7 +120,7 @@ public class Main {
 				}
 				
 				window.update();
-				renderer.update();
+				renderer.update(); 
 				
 				if (editorsMode == false) {
 					camera.update(window);

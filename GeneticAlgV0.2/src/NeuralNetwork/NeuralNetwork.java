@@ -70,16 +70,16 @@ public class NeuralNetwork {
 		
 		Random randomizer = new Random();
 		
-		if (randomizer.nextFloat() < mutationRate)
+		if (randomizer.nextFloat() <= mutationRate)
 			copy.weightsIH.map(Mutation::gauss);
 		
-		if (randomizer.nextFloat() < mutationRate)
+		if (randomizer.nextFloat() <= mutationRate)
 			copy.weightsHO.map(Mutation::gauss);
 		
-		if (randomizer.nextFloat() < mutationRate)
+		if (randomizer.nextFloat() <= mutationRate)
 			copy.biasH.map(Mutation::gauss);
 		
-		if (randomizer.nextFloat() < mutationRate)
+		if (randomizer.nextFloat() <= mutationRate)
 			copy.biasO.map(Mutation::gauss);
 		
 		return copy;
