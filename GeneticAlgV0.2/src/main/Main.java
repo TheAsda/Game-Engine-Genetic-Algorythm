@@ -1,7 +1,5 @@
 package main;
 
-import javax.print.attribute.SetOfIntegerSyntax;
-
 import org.lwjgl.glfw.GLFW;
 
 import NeuralNetwork.Population;
@@ -50,7 +48,7 @@ public class Main {
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
-	private final static int     population    = 5;
+	private final static int     population    = 15;
 	
 	public static void main(String[] args) {
 		
@@ -102,11 +100,9 @@ public class Main {
 					
 					mutate.setValue(true);
 					
-					for (int j = 0; j < population; j++) {
-						carEntities[j].calcDistance();
-					}
-					
 					carEntities = Population.nextGeneration(carEntities);
+					
+					renderer.clear(car);
 					
 					for (int j = 0; j < population; j++) {
 						renderer.proseeEntity(carEntities[j]);

@@ -17,26 +17,29 @@ import engine.rendering.models.TexturedModel;
 import engine.shaders.BasicShader;
 
 public class Renderer {
-
-	private BasicShader shader;
-	private Window window;
-	@SuppressWarnings ({"unchecked", "rawtypes"})
-	private Map<TexturedModel, List<ModelEntity>> entities = new HashMap();
-
+	
+	private BasicShader                                                                         shader;
+	private Window                                                                              window;
+	@SuppressWarnings ({"unchecked", "rawtypes"}) private Map<TexturedModel, List<ModelEntity>> entities = new HashMap();
+	
 	public Renderer(BasicShader shader, Window window) {
+		
 		this.shader = shader;
 		this.window = window;
 	}
-
+	
 	public void update() {
+		
 		shader.loadProjectionMatrix(new Matrix4f().projection(70.0f, (float)window.getWidth() / window.getHeight(), 0.1f, 1000.0f));
 	}
-
+	
 	public void loadCamera(Camera camera) {
+		
 		shader.loadViewMatrix(camera.getViewMatrix());
 	}
-
+	
 	public void proseeEntity(ModelEntity entity) {
+		
 		TexturedModel model = entity.getModel();
 		List<ModelEntity> entities = this.entities.get(model);
 		if (entities != null) {
@@ -48,8 +51,9 @@ public class Renderer {
 			this.entities.put(model, newList);
 		}
 	}
-
+	
 	public void render() {
+		
 		for (TexturedModel model : entities.keySet()) {
 			GL30.glBindVertexArray(model.getVertexArrayID());
 			GL20.glEnableVertexAttribArray(0);
@@ -69,8 +73,19 @@ public class Renderer {
 			GL30.glBindVertexArray(0);
 		}
 	}
-
+	
+	public void clear(TexturedModel model) {
+		
+		this.entities.get(model).clear();
+	}
+	
+	public int getCount(TexturedModel model) {
+		
+		return this.entities.get(model).size();
+	}
+	
 	public void remove(TexturedModel model) {
+		
 		if (this.entities.get(model).size() == 1)
 			this.entities.remove(model);
 		else

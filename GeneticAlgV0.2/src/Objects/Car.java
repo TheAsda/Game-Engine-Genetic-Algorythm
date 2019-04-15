@@ -7,23 +7,23 @@ import engine.rendering.models.TexturedModel;
 
 public class Car extends ModelEntity {
 	
-	private final float   drag  = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f,
+	private final float   drag          = 0.994f, angularDrag = 0.6f, turnSpeed = 0.02f, maxAngularVelocity = turnSpeed * 1f,
 				rayLength = 2f,
 				rayAngle = (float)Math.PI / 4;
 	private float         power, angle, angularVelocity = 0, velocity = 0, maxVelocity, minVelocity;
-	private Vector3f      centroid, startPosition, startAngle, frontRay, leftRay, rightRay;
+	private Vector3f      centroid, startPosition, startAngle, frontRay, leftRay, rightRay, prevPosition;
 	public ModelEntity    box;
 	public float          boxVertices[], boxDimentions[];
 	private NeuralNetwork brain;
-	private int           score = 0;
-	private float         distance;
+	private int           score         = 0;
+	private float         totalDistance = 0;
 	
 	public Car(TexturedModel model, Vector3f position, Vector3f angle, float power) {
 		
 		super(model, position, angle, new Vector3f(1, 1, 1));
 		
 		brain = new NeuralNetwork(3, 4, 2);
-		
+
 		startPosition = position;
 		startAngle    = angle;
 		
@@ -83,15 +83,16 @@ public class Car extends ModelEntity {
 						4, 6, 5,
 						4, 6, 7
 					}, "brick.png");
-		this.box      = new ModelEntity(box, position, angle, new Vector3f(1, 1, 1));
-		this.power    = power;
-		this.centroid = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
-		this.frontRay = centroid.add(new Vector3f(0f, 0f, rayLength));
-		this.leftRay  = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		this.rightRay = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		this.angle    = angle.getY();
-		maxVelocity   = power * 100;
-		minVelocity   = power * 5;
+		this.box     = new ModelEntity(box, position, angle, new Vector3f(1, 1, 1));
+		this.power   = power;
+		centroid     = new Vector3f(position.getX(), position.getY() + 0.3f, position.getZ());
+		prevPosition = startPosition.add(new Vector3f(0, 0.3f, 0));;
+		frontRay     = centroid.add(new Vector3f(0f, 0f, rayLength));
+		leftRay      = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		rightRay     = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		this.angle   = angle.getY();
+		maxVelocity  = power * 100;
+		minVelocity  = power * 5;
 	}
 	
 	public Car(Car car, NeuralNetwork brain) {
@@ -121,10 +122,11 @@ public class Car extends ModelEntity {
 		
 		power = car.power;
 		
-		centroid = startPosition.add(new Vector3f(0, 0.3f, 0));
-		frontRay = centroid.add(new Vector3f(0f, 0f, rayLength));
-		leftRay  = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
-		rightRay = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		centroid     = startPosition.add(new Vector3f(0, 0.3f, 0));
+		prevPosition = startPosition.add(new Vector3f(0, 0.3f, 0));
+		frontRay     = centroid.add(new Vector3f(0f, 0f, rayLength));
+		leftRay      = centroid.add(new Vector3f(-rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
+		rightRay     = centroid.add(new Vector3f(rayLength * (float)Math.cos(rayAngle), 0f, rayLength * (float)Math.sin(rayAngle)));
 		
 		angle       = startAngle.getY();
 		maxVelocity = power * 100;
@@ -311,12 +313,16 @@ public class Car extends ModelEntity {
 	
 	public void calcDistance() {
 		
-		distance = (float)Math.sqrt(Math.pow(centroid.getX() - startPosition.getX(), 2) + Math.pow(centroid.getZ() - startPosition.getZ(), 2));
+		float distance = (float)Math.sqrt(Math.pow(centroid.getX() - prevPosition.getX(), 2) + Math.pow(centroid.getZ() - prevPosition.getZ(), 2));
+		totalDistance += distance;
+		prevPosition.setX(centroid.getX());
+		prevPosition.setY(centroid.getY());
+		prevPosition.setZ(centroid.getZ());
 	}
 	
-	public float getDistance() {
+	public float getTotalDistance() {
 		
-		return distance;
+		return totalDistance;
 	}
 	
 	public void reset() {

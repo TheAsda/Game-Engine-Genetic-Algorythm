@@ -45,7 +45,6 @@ public class SecondThread implements Runnable {
 					if (carEntities[k].isRender() == true) {
 						carEntities[k].update();
 						
-						//if (counter % 2 == 0) {
 						float result[] = obstacles.raysCollision(carEntities[k], collisionThreads);
 						
 						if (result == null)
@@ -56,8 +55,10 @@ public class SecondThread implements Runnable {
 							//System.out.println("Right ray dist: " + result[2]);
 							carEntities[k].think(result);
 						}
-						//}
 						if (counter % 3 == 0) {
+							
+							carEntities[k].calcDistance();
+							
 							if ((double)System.nanoTime() / (double)1000000000 - time > 12) {
 								carEntities[k].setRender(false);
 							}

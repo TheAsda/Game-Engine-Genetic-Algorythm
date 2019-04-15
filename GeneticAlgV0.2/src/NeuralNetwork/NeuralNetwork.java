@@ -28,10 +28,10 @@ public class NeuralNetwork {
 		this.numberOfInput  = neuralNetwork.numberOfInput;
 		this.numberOfHidden = neuralNetwork.numberOfHidden;
 		this.numberOfOutput = neuralNetwork.numberOfOutput;
-		this.weightsIH      = neuralNetwork.weightsIH;
-		this.weightsHO      = neuralNetwork.weightsHO;
-		this.biasH          = neuralNetwork.biasH;
-		this.biasO          = neuralNetwork.biasO;
+		this.weightsIH      = neuralNetwork.weightsIH.copy();
+		this.weightsHO      = neuralNetwork.weightsHO.copy();
+		this.biasH          = neuralNetwork.biasH.copy();
+		this.biasO          = neuralNetwork.biasO.copy();
 	}
 	
 	public float[] feedforward(float inputArray[]) {
@@ -62,28 +62,6 @@ public class NeuralNetwork {
 		output.map(Activation::sigmoid);
 		
 		return new Matrix[]{output, hidden};
-	}
-	
-	public NeuralNetwork mutate(float mutationRate) {
-		
-		NeuralNetwork copy = new NeuralNetwork(this);
-		
-		Random randomizer = new Random();
-		
-		if (randomizer.nextFloat() <= mutationRate)
-			copy.weightsIH.map(Mutation::gauss);
-		
-		if (randomizer.nextFloat() <= mutationRate)
-			copy.weightsHO.map(Mutation::gauss);
-		
-		if (randomizer.nextFloat() <= mutationRate)
-			copy.biasH.map(Mutation::gauss);
-		
-		if (randomizer.nextFloat() <= mutationRate)
-			copy.biasO.map(Mutation::gauss);
-		
-		return copy;
-		
 	}
 	
 	public void train(float[] inputs, float[] targets) {
@@ -118,5 +96,27 @@ public class NeuralNetwork {
 		
 		weightsIH.add(weightsIHD);
 		biasH.add(hiddenGradients);
+	}
+	
+	public NeuralNetwork mutate(float mutationRate) {
+		
+		NeuralNetwork copy = new NeuralNetwork(this);
+		
+		Random randomizer = new Random();
+		
+		if (randomizer.nextFloat() <= mutationRate)
+			copy.weightsIH.map(Mutation::gauss);
+		
+		if (randomizer.nextFloat() <= mutationRate)
+			copy.weightsHO.map(Mutation::gauss);
+		
+		if (randomizer.nextFloat() <= mutationRate)
+			copy.biasH.map(Mutation::gauss);
+		
+		if (randomizer.nextFloat() <= mutationRate)
+			copy.biasO.map(Mutation::gauss);
+		
+		return copy;
+		
 	}
 }

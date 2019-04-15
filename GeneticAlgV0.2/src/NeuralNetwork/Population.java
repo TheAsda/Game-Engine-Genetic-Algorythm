@@ -41,13 +41,13 @@ public class Population {
 		
 		float sum = 0;
 		for (int i = 0; i < carEntities.length; i++) {
-			sum += carEntities[i].getDistance();
+			sum += carEntities[i].getTotalDistance();
 		}
 		
 		float fitnesses[] = new float[carEntities.length];
 		
 		for (int i = 0; i < carEntities.length; i++) {
-			fitnesses[i] = carEntities[i].getDistance() / sum;
+			fitnesses[i] = carEntities[i].getTotalDistance() / sum;
 		}
 		return fitnesses;
 	}
