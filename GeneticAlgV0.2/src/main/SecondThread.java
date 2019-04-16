@@ -6,6 +6,7 @@ import engine.io.Window;
 import main.Main.Mutation;
 import objects.Car;
 import objects.CollisionThread;
+import objects.Finish;
 import objects.Obstacle;
 
 public class SecondThread implements Runnable {
@@ -16,10 +17,11 @@ public class SecondThread implements Runnable {
 	private Car                               carEntities[];
 	private int                               population;
 	private Obstacle                          obstacles;
+	private Finish                            finishes;
 	private static ArrayList<CollisionThread> collisionThreads = new ArrayList<CollisionThread>(3);
 	private Mutation                          mutate;
 	
-	SecondThread(Window window, Car carEntities[], int population, Obstacle obstacles, Mutation mutate) {
+	SecondThread(Window window, Car carEntities[], int population, Obstacle obstacles, Mutation mutate, Finish finishes) {
 		
 		for (int i = 0; i < 3; i++)
 			collisionThreads.add(new CollisionThread());
@@ -28,6 +30,7 @@ public class SecondThread implements Runnable {
 		this.carEntities = carEntities;
 		this.population  = population;
 		this.obstacles   = obstacles;
+		this.finishes    = finishes;
 		this.mutate      = mutate;
 		
 		thread = new Thread(this);
@@ -58,6 +61,12 @@ public class SecondThread implements Runnable {
 						if (counter % 3 == 0) {
 							
 							carEntities[k].calcDistance();
+							
+							if (finishes.detectCollision(carEntities[k])) {
+								System.out.println("Finish!");
+								for (int i = 0; i < population; i++)
+									carEntities[i].setRender(false);
+							}
 							
 							if ((double)System.nanoTime() / (double)1000000000 - time > 12) {
 								carEntities[k].setRender(false);

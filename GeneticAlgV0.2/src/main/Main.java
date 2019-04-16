@@ -48,7 +48,7 @@ public class Main {
 	private static TexturedModel car;
 	private static TexturedModel brick;
 	private static TexturedModel finish;
-	private final static int     population    = 15;
+	private final static int     population    = 50;
 	
 	public static void main(String[] args) {
 		
@@ -83,7 +83,7 @@ public class Main {
 		
 		Mutation mutate = new Mutation();
 		
-		SecondThread thread = new SecondThread(window, carEntities, population, obstacles, mutate);
+		SecondThread thread = new SecondThread(window, carEntities, population, obstacles, mutate, finishes);
 		
 		while (!window.closed()) {
 			if (window.isUpdating(0) && mutate.isMutating() == false) {
@@ -116,7 +116,7 @@ public class Main {
 				}
 				
 				window.update();
-				renderer.update(); 
+				renderer.update();
 				
 				if (editorsMode == false) {
 					camera.update(window);
@@ -150,6 +150,10 @@ public class Main {
 			window.lockMouse();
 		if (window.isKeyPressed(GLFW.GLFW_KEY_U))
 			window.unlockMouse();
+		if (window.isKeyPressed(GLFW.GLFW_KEY_R)) {
+			obstacles.reset();
+			finishes.reset();
+		}
 		if (window.isKeyPressed(GLFW.GLFW_KEY_E)) {
 			editorsMode = !editorsMode;
 			if (editorsMode == true)

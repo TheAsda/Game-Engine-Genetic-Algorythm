@@ -680,4 +680,13 @@ public class Obstacle {
 		return maxY;
 	}
 	
+	public void reset() {
+		
+		for (int i = 0; i < chunks.length; i++) {
+			if (chunks[i] != null)
+				chunks[i].obstacles.clear();
+			
+		}
+	}
+	
 }
